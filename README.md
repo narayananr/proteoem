@@ -57,12 +57,11 @@ matrix), is what motivates the model.
 
 ## Scope
 
-This is an early methods implementation, **evaluated in simulation only**. Its
-tau-like data are synthetic and inspired only by publicly described design
-features. They are not Nautilus data, do not reproduce any proprietary
-software, and do not validate or estimate the analytical performance of any
-commercial platform. Benchmark error, memory, and runtime values are software
-checks and must not be read as measured platform performance.
+ProteoEM is evaluated in simulation. Its tau-like data are synthetic, drawn
+from publicly described design features. They are not Nautilus data and do not
+reproduce any proprietary software. Benchmark error, memory, and runtime values
+characterize the estimator, not the analytical performance of any commercial
+platform.
 
 ## Requirements
 
