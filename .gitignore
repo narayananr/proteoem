@@ -17,3 +17,7 @@ TODO.md
 PROGRESS.md
 MANUSCRIPT_DRAFT.md
 FIGURE1_REDESIGN_NOTES.md
+
+# Generated platform schematic (kept local, rendered on demand)
+docs/figures/platform-*.png
+docs/figures/platform-*.svg

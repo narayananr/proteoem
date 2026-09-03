@@ -38,22 +38,6 @@ candidate proteins or proteoforms. Estimating how much of each is present
 therefore means assigning ambiguous traces across candidates and counting — a
 mixture-inference problem, not a lookup.
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/figures/platform-dark@2x.png">
-  <img alt="Three-panel schematic of iterative single-molecule affinity mapping. Protein
-molecules are immobilised on a dense array, at most one per landing pad, and stay in
-place for the whole run, so the features seen together belong to one molecule. In each
-cycle a probe is washed over the array, binds some molecules and not others, and every
-occupied pad records one yes or no call. Repeating the panel cycle after cycle gives
-each pad an ordered sequence of calls, which is its affinity trace and the input to the
-model."
-       src="docs/figures/platform-light@2x.png">
-</picture>
-
-The schematic above is generic. It depicts design features described publicly for
-this class of instrument and is not a depiction of any particular commercial
-platform.
-
 This is the same shape as **RNA-seq transcript quantification**, where a
 sequencing read can come from several transcripts and EM estimates transcript
 abundances by splitting each read's count among its possible sources. ProteoEM
@@ -204,22 +188,23 @@ python -m pytest
 Frozen benchmark manifests used by the model-violation grid live under
 `configs/`.
 
-Both figures in this file are generated, not drawn:
+The method schematic in this file is generated, not drawn:
 
 ```bash
 python -m pip install -e ".[figures]"
-python docs/figures/make_platform_figure.py
 python docs/figures/make_method_figure.py
 ```
 
-Every number in the method figure is computed by calling `fit_em`, and the
-script asserts convergence, that no probe was dropped as uninformative, that
-each molecule's responsibilities sum to one, and that they accumulate to the
-reported expected counts. It fails rather than emitting a figure that
-disagrees with the model. The two figures share one palette and one set of
-drawing helpers, in `docs/figures/figstyle.py`, and the traces drawn in the
-platform figure are the same arrays the method figure fits. Both themes and
-the vector versions are written to `docs/figures/`.
+Every number in it is computed by calling `fit_em`, and the script asserts
+convergence, that no probe was dropped as uninformative, that each molecule's
+responsibilities sum to one, and that they accumulate to the reported expected
+counts. It fails rather than emitting a figure that disagrees with the model.
+Both themes and the vector versions are written to `docs/figures/`.
+
+`docs/figures/make_platform_figure.py` renders a companion schematic of the
+measurement itself, for talks and supplementary material. Its output is not
+committed, so run the script to produce it. Both scripts share one palette and
+one set of drawing helpers, in `docs/figures/figstyle.py`.
 
 ## License
 
