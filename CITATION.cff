@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+message: >-
+  If you use ProteoEM, please cite the software using the metadata in this file.
+  A citation for the accompanying methods manuscript will be added when it is
+  available.
+title: ProteoEM
+type: software
+version: 0.1.0
+license: MIT
+repository-code: "https://github.com/narayananr/proteoem"
+authors:
+  - family-names: Raghupathy
+    given-names: Narayanan
+abstract: >-
+  A reference implementation of fixed-emission finite-mixture inference for
+  abundance estimation from iterative single-molecule affinity traces.
+keywords:
+  - expectation-maximization
+  - proteomics
+  - single-molecule
+  - proteoform

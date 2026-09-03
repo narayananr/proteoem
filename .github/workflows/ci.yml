@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install package and tests
+        run: python -m pip install -e ".[test]"
+      - name: Run test suite
+        run: python -m pytest -q
+      - name: Exercise the command-line entry point
+        run: proteoem benchmark-tau --output /tmp/tau-ci --molecules 200 --seed 7
+
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build wheel and source distribution
+        run: |
+          python -m pip install --upgrade build
+          python -m build
+      - name: Install the wheel in a clean environment
+        run: |
+          python -m venv /tmp/wheelcheck
+          /tmp/wheelcheck/bin/python -m pip install dist/*.whl
+          /tmp/wheelcheck/bin/python -c "import proteoem; print(proteoem.__version__)"

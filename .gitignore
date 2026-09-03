@@ -1,0 +1,19 @@
+.venv/
+node_modules/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+build/
+dist/
+*.egg-info/
+tmp/
+.DS_Store
+
+# Internal working notes (kept local, out of the repo)
+TODO.md
+PROGRESS.md
+MANUSCRIPT_DRAFT.md
+FIGURE1_REDESIGN_NOTES.md

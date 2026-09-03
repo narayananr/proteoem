@@ -1,0 +1,1262 @@
+{
+  "schema_version": "4.0.0",
+  "manifest_id": "proteoem-tau768-systematic-v4",
+  "frozen": true,
+  "frozen_utc_date": "2026-08-31",
+  "data_origin": "synthetic_design_inspired",
+  "claim_boundary": "Tau-inspired synthetic stress tests; not Nautilus molecule-level data, not a reconstruction of proprietary software, and not predicted assay or platform performance.",
+  "estimand": {
+    "primary": "composition_among_accepted_traces",
+    "all_trace_gate": true,
+    "physical_recovery_by_candidate": 1.0,
+    "panel_visibility_by_candidate": 1.0,
+    "effective_observation_yield_by_candidate": 1.0,
+    "source_equals_accepted_composition": true
+  },
+  "design": {
+    "candidate_dictionary": "tau768",
+    "candidate_count": 768,
+    "isoforms": [
+      "0N3R",
+      "0N4R",
+      "1N3R",
+      "1N4R",
+      "2N3R",
+      "2N4R"
+    ],
+    "ptm_features": [
+      "pT181",
+      "pS202_pT205",
+      "pT205",
+      "pS214",
+      "pT217",
+      "pT231",
+      "pS396"
+    ],
+    "logical_probe_ids": [
+      "pan_tau_A",
+      "pan_tau_B",
+      "anti_0N",
+      "anti_2N",
+      "anti_4R",
+      "anti_pT181",
+      "anti_pS202_pT205",
+      "anti_pT205",
+      "anti_pS214",
+      "anti_pT217",
+      "anti_pT231",
+      "anti_pS396"
+    ],
+    "repeats_per_logical_probe": 3,
+    "cycle_count": 36,
+    "cycle_to_probe_1_based": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "mixture": {
+      "id": "A1_sparse32",
+      "active_candidate_count": 32,
+      "support_rule": "Select one candidate uniformly within each isoform, then select 26 candidates uniformly without replacement from the remaining dictionary.",
+      "active_weight_distribution": "Dirichlet(0.4 repeated 32 times)",
+      "inactive_weight": 0.0,
+      "pairing_rule": "Within a Monte Carlo seed, reuse the support, weights, latent molecule identities, and applicable base random variates across all scenarios."
+    },
+    "true_emissions": {
+      "parameterization": "q_kj = alpha_j when the design feature is present and beta_j otherwise",
+      "pan_tau": {
+        "alpha": 0.97,
+        "beta": 0.002
+      },
+      "isoform": {
+        "alpha": 0.91,
+        "beta": 0.01
+      },
+      "ptm": {
+        "alpha": 0.84,
+        "beta": 0.015
+      },
+      "repeat_specific_rates": false,
+      "baseline_conditional_independence": true
+    }
+  },
+  "replicate_semantics": {
+    "monte_carlo_seed": "One independently generated synthetic experiment used to estimate simulation-to-simulation variability; it is not a biological or technical replicate.",
+    "biological_replicate": "An independently drawn biological-sample mixture from a population model.",
+    "technical_run": "An independently processed and observed molecule set from the same biological-sample mixture; it is not repeated imaging of the same molecules.",
+    "primary_biological_replicates_per_seed": 1,
+    "primary_technical_runs_per_biological_replicate": 1,
+    "technical_or_biological_variance_claims_allowed": false
+  },
+  "randomness": {
+    "bit_generator": "PCG64",
+    "seed_sequence": "numpy.random.SeedSequence",
+    "primary_master_seeds": [
+      7,
+      17,
+      27,
+      37,
+      47,
+      57,
+      67,
+      77,
+      87,
+      97,
+      107,
+      117,
+      127,
+      137,
+      147,
+      157,
+      167,
+      177,
+      187,
+      197
+    ],
+    "debug_master_seeds": [
+      7,
+      17,
+      27
+    ],
+    "spawn_key_order": [
+      "domain_code",
+      "biological_replicate_index_0_based",
+      "technical_run_index_0_based",
+      "bootstrap_index_0_based"
+    ],
+    "domain_codes": {
+      "support_and_weights": 0,
+      "molecule_identities": 1,
+      "emission_uniforms": 2,
+      "missingness_uniforms": 3,
+      "q_error_standard_normals": 4,
+      "shared_repeat_effects": 5,
+      "ood_support": 6,
+      "ood_generation": 7,
+      "bootstrap_multinomial": 8
+    },
+    "common_random_numbers": "Use the same domain stream within a master seed wherever scenarios share a latent quantity. Missing-at-random rates are nested by thresholding the same U(0,1) variates; Q-error scenarios share the same standard-normal matrix; dependence scenarios share identities, effects, and Bernoulli uniforms."
+  },
+  "tiers": {
+    "debug": {
+      "purpose": "All-scenario pipeline, schema, invariants, deterministic concurrency, bootstrap, and resource preflight only; never used for manuscript headline values.",
+      "molecules_per_dataset": 5000,
+      "master_seeds": [
+        7,
+        17,
+        27
+      ],
+      "scenario_ids": [
+        "B0_complete",
+        "B1_mcar02",
+        "B2_mcar10",
+        "B3_cycle18_drop",
+        "B4_anti4R_drop",
+        "B5_mnar_call_dependent",
+        "Q1_delta_m050_sigma000",
+        "Q2_delta_p050_sigma000",
+        "Q3_delta_000_sigma025",
+        "Q4_delta_m050_sigma025",
+        "Q5_delta_p050_sigma025",
+        "D1_shared035",
+        "D2_shared065",
+        "I1_anti4R_contrast025",
+        "I2_anti4R_contrast000",
+        "O1_heldout05",
+        "O2_heldout20",
+        "O3_artifact_mix05"
+      ],
+      "bootstrap_resamples": 10,
+      "headline_eligible": false
+    },
+    "primary": {
+      "purpose": "Paired Monte Carlo evaluation used for systematic manuscript results under the convergence-audited, reporting-complete v4 design.",
+      "molecules_per_dataset": 10000,
+      "master_seeds": [
+        7,
+        17,
+        27,
+        37,
+        47,
+        57,
+        67,
+        77,
+        87,
+        97,
+        107,
+        117,
+        127,
+        137,
+        147,
+        157,
+        167,
+        177,
+        187,
+        197
+      ],
+      "scenario_ids": [
+        "B0_complete",
+        "B1_mcar02",
+        "B2_mcar10",
+        "B3_cycle18_drop",
+        "B4_anti4R_drop",
+        "B5_mnar_call_dependent",
+        "Q1_delta_m050_sigma000",
+        "Q2_delta_p050_sigma000",
+        "Q3_delta_000_sigma025",
+        "Q4_delta_m050_sigma025",
+        "Q5_delta_p050_sigma025",
+        "D1_shared035",
+        "D2_shared065",
+        "I1_anti4R_contrast025",
+        "I2_anti4R_contrast000",
+        "O1_heldout05",
+        "O2_heldout20",
+        "O3_artifact_mix05"
+      ],
+      "bootstrap_resamples": 50,
+      "headline_eligible": true
+    }
+  },
+  "scenario_definitions": {
+    "B0_complete": {
+      "family": "missingness",
+      "paired_reference": "B1_mcar02",
+      "generation": "independent_nominal_Q",
+      "missingness": {
+        "kind": "complete",
+        "probability": 0.0
+      },
+      "fitted_Q": "true_Q"
+    },
+    "B1_mcar02": {
+      "family": "missingness",
+      "paired_reference": "B1_mcar02",
+      "generation": "independent_nominal_Q",
+      "missingness": {
+        "kind": "independent_mcar",
+        "probability": 0.02
+      },
+      "fitted_Q": "true_Q"
+    },
+    "B2_mcar10": {
+      "family": "missingness",
+      "paired_reference": "B1_mcar02",
+      "generation": "independent_nominal_Q",
+      "missingness": {
+        "kind": "independent_mcar",
+        "probability": 0.1,
+        "nested_with": "B1_mcar02"
+      },
+      "fitted_Q": "true_Q"
+    },
+    "B3_cycle18_drop": {
+      "family": "missingness",
+      "paired_reference": "B1_mcar02",
+      "generation": "independent_nominal_Q",
+      "missingness": {
+        "kind": "independent_mcar_plus_forced_cycle",
+        "probability": 0.02,
+        "forced_missing_cycle_id_1_based": 18
+      },
+      "fitted_Q": "true_Q"
+    },
+    "B4_anti4R_drop": {
+      "family": "missingness_and_exact_identifiability",
+      "paired_reference": "B1_mcar02",
+      "generation": "independent_nominal_Q",
+      "missingness": {
+        "kind": "independent_mcar_plus_forced_logical_probe",
+        "probability": 0.02,
+        "forced_missing_logical_probe": "anti_4R",
+        "forced_missing_repeats": [
+          1,
+          2,
+          3
+        ]
+      },
+      "fitted_Q": "true_Q",
+      "reporting_resolution": "exact_observable_groups"
+    },
+    "B5_mnar_call_dependent": {
+      "family": "missingness",
+      "paired_reference": "B1_mcar02",
+      "generation": "independent_nominal_Q",
+      "missingness": {
+        "kind": "latent_call_dependent",
+        "probability_if_latent_call_1": 0.2,
+        "probability_if_latent_call_0": 0.02,
+        "additional_mcar_probability": 0.0
+      },
+      "fitted_Q": "true_Q",
+      "decoder_assumption": "omit_as_if_ignorable",
+      "intentional_misspecification": true
+    },
+    "Q1_delta_m050_sigma000": {
+      "family": "Q_misspecification",
+      "paired_reference": "B1_mcar02",
+      "reuse_observations_from": "B1_mcar02",
+      "fitted_Q_formula": "expit(logit(true_Q) + delta + sigma * Z_kj)",
+      "delta": -0.5,
+      "sigma": 0.0,
+      "clip": [
+        1e-06,
+        0.999999
+      ]
+    },
+    "Q2_delta_p050_sigma000": {
+      "family": "Q_misspecification",
+      "paired_reference": "B1_mcar02",
+      "reuse_observations_from": "B1_mcar02",
+      "fitted_Q_formula": "expit(logit(true_Q) + delta + sigma * Z_kj)",
+      "delta": 0.5,
+      "sigma": 0.0,
+      "clip": [
+        1e-06,
+        0.999999
+      ]
+    },
+    "Q3_delta_000_sigma025": {
+      "family": "Q_misspecification",
+      "paired_reference": "B1_mcar02",
+      "reuse_observations_from": "B1_mcar02",
+      "fitted_Q_formula": "expit(logit(true_Q) + delta + sigma * Z_kj)",
+      "delta": 0.0,
+      "sigma": 0.25,
+      "clip": [
+        1e-06,
+        0.999999
+      ]
+    },
+    "Q4_delta_m050_sigma025": {
+      "family": "Q_misspecification",
+      "paired_reference": "B1_mcar02",
+      "reuse_observations_from": "B1_mcar02",
+      "fitted_Q_formula": "expit(logit(true_Q) + delta + sigma * Z_kj)",
+      "delta": -0.5,
+      "sigma": 0.25,
+      "clip": [
+        1e-06,
+        0.999999
+      ]
+    },
+    "Q5_delta_p050_sigma025": {
+      "family": "Q_misspecification",
+      "paired_reference": "B1_mcar02",
+      "reuse_observations_from": "B1_mcar02",
+      "fitted_Q_formula": "expit(logit(true_Q) + delta + sigma * Z_kj)",
+      "delta": 0.5,
+      "sigma": 0.25,
+      "clip": [
+        1e-06,
+        0.999999
+      ]
+    },
+    "D1_shared035": {
+      "family": "conditional_dependence",
+      "paired_reference": "B1_mcar02",
+      "missingness": {
+        "kind": "independent_mcar",
+        "probability": 0.02
+      },
+      "shared_effect_unit": "molecule_by_logical_probe",
+      "shared_logit_standard_deviation": 0.35,
+      "shared_across_three_repeats": true,
+      "preserve_marginal_true_Q": true,
+      "marginal_intercept_solver": {
+        "integration": "64_point_Gauss_Hermite",
+        "bisection_bracket": [
+          -40.0,
+          40.0
+        ],
+        "absolute_tolerance": 1e-12
+      },
+      "decoder_assumption": "independent_repeats"
+    },
+    "D2_shared065": {
+      "family": "conditional_dependence",
+      "paired_reference": "B1_mcar02",
+      "missingness": {
+        "kind": "independent_mcar",
+        "probability": 0.02
+      },
+      "shared_effect_unit": "molecule_by_logical_probe",
+      "shared_logit_standard_deviation": 0.65,
+      "shared_across_three_repeats": true,
+      "preserve_marginal_true_Q": true,
+      "marginal_intercept_solver": {
+        "integration": "64_point_Gauss_Hermite",
+        "bisection_bracket": [
+          -40.0,
+          40.0
+        ],
+        "absolute_tolerance": 1e-12
+      },
+      "decoder_assumption": "independent_repeats"
+    },
+    "I1_anti4R_contrast025": {
+      "family": "near_identifiability",
+      "paired_reference": "B1_mcar02",
+      "missingness": {
+        "kind": "independent_mcar",
+        "probability": 0.02
+      },
+      "logical_probe": "anti_4R",
+      "contrast_formula": "midpoint + multiplier * (rate - midpoint), where midpoint=(alpha+beta)/2",
+      "contrast_multiplier": 0.25,
+      "true_and_fitted_alpha": 0.5725,
+      "true_and_fitted_beta": 0.3475
+    },
+    "I2_anti4R_contrast000": {
+      "family": "exact_identifiability",
+      "paired_reference": "B1_mcar02",
+      "missingness": {
+        "kind": "independent_mcar",
+        "probability": 0.02
+      },
+      "logical_probe": "anti_4R",
+      "contrast_formula": "midpoint + multiplier * (rate - midpoint), where midpoint=(alpha+beta)/2",
+      "contrast_multiplier": 0.0,
+      "true_and_fitted_alpha": 0.46,
+      "true_and_fitted_beta": 0.46,
+      "reporting_resolution": "exact_observable_groups"
+    },
+    "O1_heldout05": {
+      "family": "candidate_omission",
+      "paired_reference": "B1_mcar02",
+      "missingness": {
+        "kind": "independent_mcar",
+        "probability": 0.02
+      },
+      "heldout_fraction": 0.05,
+      "heldout_candidate_count": 8,
+      "heldout_support_rule": "From candidates outside the 32-state base support, select one per isoform and then two from the remainder; assign equal heldout weights.",
+      "fitted_candidate_count": 760,
+      "heldout_rows_removed_before_fitting": true
+    },
+    "O2_heldout20": {
+      "family": "candidate_omission",
+      "paired_reference": "B1_mcar02",
+      "missingness": {
+        "kind": "independent_mcar",
+        "probability": 0.02
+      },
+      "heldout_fraction": 0.2,
+      "heldout_candidate_count": 8,
+      "heldout_support_rule": "Reuse the O1 heldout states; assign equal heldout weights.",
+      "fitted_candidate_count": 760,
+      "heldout_rows_removed_before_fitting": true
+    },
+    "O3_artifact_mix05": {
+      "family": "out_of_dictionary_artifacts",
+      "paired_reference": "B1_mcar02",
+      "missingness": {
+        "kind": "independent_mcar",
+        "probability": 0.02
+      },
+      "base_in_dictionary_fraction": 0.95,
+      "subtype_fractions": {
+        "two_molecule_collision": 0.02,
+        "truncation": 0.02,
+        "non_target_background": 0.01
+      },
+      "two_molecule_collision_rule": "Draw two independent base origins and use the logical union of their 12 design features.",
+      "truncation_rule": "Draw one base origin, set pan_tau_B absent, index the ordered ten-probe discriminating vector from 0 through 9, choose h uniformly from 1 through 9, and set positions h through 9 to absent.",
+      "non_target_background_rule": "Set all 12 design features absent.",
+      "fitted_candidate_count": 768,
+      "artifact_profiles_not_added_to_fitted_dictionary": true
+    }
+  },
+  "methods": {
+    "run_on_all_scenarios": [
+      "em_fixed_q"
+    ],
+    "targeted_methods": {
+      "B1_mcar02": [
+        "soft_uniform_one_step",
+        "top_likelihood_equal_ties",
+        "binary_best_hamming_em"
+      ],
+      "B2_mcar10": [
+        "top_likelihood_equal_ties",
+        "NA_as_zero_top_likelihood_antipattern"
+      ],
+      "D1_shared035": [
+        "oracle_repeat_aware_likelihood_em"
+      ],
+      "D2_shared065": [
+        "oracle_repeat_aware_likelihood_em"
+      ]
+    },
+    "headline_scenario_contrasts": {
+      "em_fixed_q": "all_nonself_declared_paired_references",
+      "top_likelihood_equal_ties": [
+        "B2_mcar10"
+      ]
+    },
+    "headline_method_contrasts": [
+      {
+        "scenario_id": "B1_mcar02",
+        "method_id": "soft_uniform_one_step",
+        "reference_method_id": "em_fixed_q"
+      },
+      {
+        "scenario_id": "B1_mcar02",
+        "method_id": "top_likelihood_equal_ties",
+        "reference_method_id": "em_fixed_q"
+      },
+      {
+        "scenario_id": "B1_mcar02",
+        "method_id": "binary_best_hamming_em",
+        "reference_method_id": "em_fixed_q"
+      },
+      {
+        "scenario_id": "B2_mcar10",
+        "method_id": "NA_as_zero_top_likelihood_antipattern",
+        "reference_method_id": "top_likelihood_equal_ties"
+      },
+      {
+        "scenario_id": "D1_shared035",
+        "method_id": "oracle_repeat_aware_likelihood_em",
+        "reference_method_id": "em_fixed_q"
+      },
+      {
+        "scenario_id": "D2_shared065",
+        "method_id": "oracle_repeat_aware_likelihood_em",
+        "reference_method_id": "em_fixed_q"
+      }
+    ],
+    "truth_access": "Every method receives the scenario's declared fitted_Q, which equals true_Q in correctly specified baselines. Only method IDs beginning with oracle_ may use additional generating parameters beyond that supplied input; no method may use molecule identity truth.",
+    "hard_tie_rule": "Divide one molecule count equally across exact maximum-likelihood ties; for top-label accuracy choose the lowest candidate index.",
+    "binary_rule": "Retain every candidate in the minimum observed-cycle Hamming-mismatch stratum.",
+    "joint_abundance_emission_fit_in_v4": false
+  },
+  "bootstrap": {
+    "method": "em_fixed_q",
+    "eligible_primary_scenarios": [
+      "B0_complete",
+      "B1_mcar02",
+      "B2_mcar10"
+    ],
+    "resampling_unit": "independent_molecule",
+    "implementation": "For trace-likelihood-class counts n, draw n_star from Multinomial(N, n/N), reuse the class likelihood matrix, and refit from the original point estimate.",
+    "primary_resamples": 50,
+    "debug_resamples": 10,
+    "confidence_level": 0.95,
+    "interval_type": "equal_tailed_percentile",
+    "quantile_method": "linear",
+    "conditional_on": [
+      "fixed_fitted_Q",
+      "fixed_candidate_dictionary",
+      "realized_cycle_or_probe_availability"
+    ],
+    "minimum_success_fraction": 0.98,
+    "coverage_estimands": [
+      "six_isoform_totals",
+      "seven_PTM_marginals",
+      "singleton_observable_active_candidates_with_expected_count_at_least_20",
+      "exact_observable_group_totals_containing_an_active_candidate"
+    ],
+    "coverage_summary": "Group by scenario_id, method_id, estimand_type, and named estimand_id across paired Monte Carlo seeds; report successes/attempts, empirical coverage, mean and median width, and a Wilson 95% interval.",
+    "coverage_grouping": [
+      "scenario_id",
+      "method_id",
+      "estimand_type",
+      "estimand_id"
+    ],
+    "coverage_minimum_valid_seed_intervals": 18,
+    "interpretation_limit": "Intervals are equal-tailed percentile intervals conditional on fixed fitted Q, the fixed candidate dictionary, and realized availability. Fifty primary resamples give a 0.02 bootstrap-ECDF increment, and 20 Monte Carlo seeds give a 0.05 empirical-coverage increment; neither supports fine nominal-coverage claims or calibration-emission uncertainty.",
+    "diagnostics_required": true,
+    "outer_calibration_bootstrap_in_v4": false
+  },
+  "stopping_and_failures": {
+    "em": {
+      "initialization": "uniform_over_fitted_candidates",
+      "max_iterations": 500,
+      "relative_objective_tolerance": 1e-08,
+      "maximum_weight_change_tolerance": 1e-08,
+      "consecutive_qualifying_iterations": 1,
+      "block_size": 4096,
+      "return_responsibilities_during_abundance_fit": false,
+      "monotonicity_tolerance": "1e-10 * (1 + abs(previous centered log likelihood))",
+      "terminal_fixed_point_residual_maximum": 1e-07,
+      "retry_once_if_nonconverged": {
+        "max_iterations": 10000,
+        "initialization": "normalize(top_likelihood_equal_tie_counts + 0.5)"
+      }
+    },
+    "identifiability_sensitivity_em": {
+      "initialization": "converged_base_fit_weights",
+      "initial_max_iterations": 500,
+      "retry_once_if_nonconverged": {
+        "max_iterations": 10000,
+        "initialization": "continue_from_initial_sensitivity_fit_weights"
+      },
+      "relative_objective_tolerance": 1e-08,
+      "maximum_weight_change_tolerance": 1e-08,
+      "terminal_fixed_point_residual_maximum": 1e-07,
+      "require_status_ok_for_full_tier": true
+    },
+    "run_status_values": [
+      "ok",
+      "nonconverged",
+      "numerical_failure",
+      "exception",
+      "resource_skipped",
+      "not_applicable"
+    ],
+    "invalid_run_rule": "Do not calculate comparative metrics after nonconvergence, nonfinite output, failed normalization, excessive terminal residual, or a monotonicity violation beyond tolerance.",
+    "failure_precedence": [
+      "nonfinite_fit",
+      "likelihood_nonmonotonic",
+      "terminal_residual_exceeded",
+      "em_nonconvergence"
+    ],
+    "seed_replacement": false,
+    "primary_summary_minimum_valid_seed_pairs": 18,
+    "primary_summary_minimum_valid_absolute_runs": 18,
+    "headline_rule": "For a scenario-method metric with a declared scenario or method contrast, headline eligibility requires at least 18 of 20 valid absolute runs and at least 18 valid paired contrasts. When no contrast is declared for that scenario-method metric, at least 18 valid absolute runs are sufficient. A named bootstrap estimand requires at least 18 valid seed intervals for headline coverage.",
+    "systematic_failure_stop": "After three fatal scenario-seed failures with the same scenario and failure code, stop scheduling that scenario, continue unrelated scenarios, and require a code/configuration audit before a versioned rerun. Individual bootstrap-replicate failures are not fatal scheduling events; their aggregate validity is governed by the 0.98 minimum-success rule.",
+    "systematic_failure_stop_policy": {
+      "threshold_failed_scenario_seed_attempts": 3,
+      "count_unit": "At most once per scenario-seed and failure code, even if several method rows inherit one worker or resource failure.",
+      "fatal_failure_rules": [
+        {
+          "stage": "point_estimate",
+          "failure_codes": "all_except_systematic_failure_stop"
+        },
+        {
+          "stage": "worker",
+          "failure_codes": "all_except_systematic_failure_stop"
+        },
+        {
+          "stage": "bootstrap",
+          "failure_codes": [
+            "bootstrap_wall_seconds",
+            "bootstrap_wall_limit",
+            "maximum_rss_bytes_per_worker"
+          ]
+        },
+        {
+          "stage": "bootstrap_summary",
+          "failure_codes": [
+            "bootstrap_success_fraction_below_minimum"
+          ]
+        }
+      ],
+      "nonfatal_bootstrap_replicate_rule": {
+        "stage": "bootstrap",
+        "bootstrap_index_0_based": "integer",
+        "failure_codes": "all_except_declared_fatal_bootstrap_codes",
+        "action": "Retain each replicate failure and diagnostic row, but do not increment the systematic-stop counter. Apply bootstrap.minimum_success_fraction to the complete scenario-seed bootstrap result."
+      },
+      "bootstrap_aggregate_rule": "If a completed bootstrap has success_fraction below bootstrap.minimum_success_fraction, emit one bootstrap_summary failure with code bootstrap_success_fraction_below_minimum. A bootstrap wall/resource failure is already fatal under its own code and does not also emit the aggregate code.",
+      "seed_replacement": false
+    },
+    "configuration_change_rule": "Never edit a frozen manifest in place after execution; issue a new manifest_id and retain both archives.",
+    "coverage_headline_minimum_valid_seed_intervals": 18
+  },
+  "resources": {
+    "worker_process_isolation": true,
+    "maximum_concurrent_primary_workers": 2,
+    "maximum_rss_bytes_per_worker": 4294967296,
+    "point_estimate_wall_seconds_per_scenario_seed": 600,
+    "identifiability_wall_seconds_per_scenario_seed": 300,
+    "bootstrap_wall_seconds_per_scenario_seed": 600,
+    "maximum_dense_likelihood_entries": 10000000,
+    "maximum_archive_bytes": 1073741824,
+    "archive_size_definition": "Sum of the byte sizes of all regular top-level archive files except output_checksums.sha256; the checksum inventory is excluded to avoid a self-referential size calculation.",
+    "preflight_gate": "All v4 debug point estimates, deterministic two-worker reruns, required bootstrap diagnostics, reporting-contract checks, schema checks, and invariants must pass before primary scheduling.",
+    "limit_action": "Terminate only a worker affected by a scenario-seed resource limit, write a resource_skipped row with the observed limit and partial diagnostics, and do not substitute a smaller unplanned dataset. If a full-v4 archive payload exceeds maximum_archive_bytes, finalize it with failed execution status and an archive-level failure row; such an archive cannot satisfy the primary debug gate.",
+    "full_fit_molecule_limit": 10000,
+    "class_count_only_audit_molecules": [
+      5000,
+      200000,
+      1000000
+    ],
+    "prohibited_extrapolation": "Class-count audits are not fitted runtime benchmarks and cannot support million- or billion-molecule runtime claims.",
+    "worker_blas_threads": 1,
+    "worker_thread_environment_variables": [
+      "OMP_NUM_THREADS",
+      "OPENBLAS_NUM_THREADS",
+      "MKL_NUM_THREADS",
+      "VECLIB_MAXIMUM_THREADS",
+      "NUMEXPR_NUM_THREADS",
+      "BLIS_NUM_THREADS"
+    ],
+    "deterministic_scheduling": "Schedule seeds in declared order; within a seed submit scenarios in declared order to at most two isolated workers; collect and archive results in seed-major then scenario-major manifest order; apply systematic-stop decisions before scheduling the next seed."
+  },
+  "execution_gates": {
+    "full_tier_requires_clean_git": true,
+    "failed_full_tier_exit_code_nonzero": true,
+    "smoke_and_preflight_status": "not_applicable",
+    "point_run_rule": "Every manifest-planned scenario-seed-method row must occur exactly once with status ok and metrics_valid true.",
+    "bootstrap_rule": "Every eligible EM scenario-seed must have the declared number of uniquely indexed diagnostics and at least one interval row; every interval must satisfy bootstrap.minimum_success_fraction.",
+    "full_primary_debug_gate": {
+      "required_archive_count": 2,
+      "required_tier": "debug",
+      "required_execution_scope": "full_tier",
+      "required_execution_status": "passed",
+      "required_git_dirty": false,
+      "validate_all_checksum_entries": true,
+      "require_exact_manifest_bytes": true,
+      "require_current_complete_source_sha256": true,
+      "require_complete_ok_point_runs": true,
+      "require_valid_bootstrap_outputs": true,
+      "deterministic_pair_comparison": {
+        "scientific_files": [
+          "manifest.json",
+          "candidate_dictionary.tsv",
+          "probe_panel.tsv",
+          "scenario_index.tsv",
+          "runs.tsv",
+          "paired_contrasts.tsv",
+          "summary.tsv",
+          "bootstrap_intervals.tsv",
+          "bootstrap_diagnostics.tsv",
+          "coverage_summary.tsv",
+          "failures.tsv",
+          "reliability.tsv",
+          "ood_metrics.tsv",
+          "identifiability_diagnostics.tsv",
+          "identifiability_singular_values.tsv",
+          "feature_metrics.tsv",
+          "figure_data.tsv",
+          "execution_status.json"
+        ],
+        "normalized_run_excluded_fields": [
+          "wall_seconds",
+          "peak_RSS_bytes"
+        ],
+        "excluded_files": [
+          "provenance.json",
+          "output_checksums.sha256"
+        ]
+      }
+    }
+  },
+  "metrics": {
+    "primary_abundance": [
+      "total_variation",
+      "jensen_shannon_base2",
+      "candidate_MAE",
+      "candidate_RMSE",
+      "maximum_absolute_error"
+    ],
+    "group_and_feature": [
+      "group_total_variation",
+      "isoform_total_variation",
+      "PTM_marginal_MAE",
+      "PTM_pair_MAE"
+    ],
+    "assignment": [
+      "top1_accuracy",
+      "top5_recall"
+    ],
+    "probability_scoring_and_calibration": [
+      "log_score",
+      "Brier_score",
+      "ECE_10_equal_frequency",
+      "posterior_entropy"
+    ],
+    "detection_truth_rule": "A full-dictionary candidate is truth-detectable when N * true_weight >= 20, where N is the declared source molecule count.",
+    "detection_call_rule": "A full-dictionary candidate is called detected when N * estimated_weight >= 20 after mapping fitted weights to all 768 candidates and assigning zero to omitted candidates.",
+    "detection": [
+      "detection_sensitivity",
+      "detection_false_discovery_rate"
+    ],
+    "OOD": [
+      "AUROC_one_minus_maximum_posterior",
+      "AUPRC_one_minus_maximum_posterior",
+      "AUROC_negative_maximum_log_likelihood_per_observed_call",
+      "AUPRC_negative_maximum_log_likelihood_per_observed_call",
+      "false_accept_fraction_at_maximum_posterior_at_least_0.80"
+    ],
+    "near_identifiability": [
+      "singular_values_of_centered_candidate_log_likelihood_matrix",
+      "condition_number_above_1e-12_relative_singular_value_floor",
+      "weight_change_under_plus_or_minus_0.05_logit_Q_perturbation"
+    ],
+    "computation": [
+      "iterations",
+      "wall_seconds",
+      "peak_RSS_bytes",
+      "raw_molecule_count",
+      "trace_likelihood_class_count",
+      "candidate_count",
+      "dense_entries_per_iteration"
+    ],
+    "operational_definitions": {
+      "maximum_absolute_error": "Maximum absolute difference between fitted and true abundance over the fitted candidate coordinates plus one aggregate out-of-dictionary coordinate; archive the aggregate truth mass and candidate/group abundance resolution beside the metric. Candidate-level abundance metrics are not applicable under exact unresolved candidate groups.",
+      "PTM_pair_MAE": "Mean absolute error over the 21 unordered pairs of the seven declared PTM features, using each pair's joint-positive abundance.",
+      "posterior_entropy": "Count-weighted mean Shannon entropy in natural-log units over closed-set assignment posteriors, at candidate resolution when candidates are distinguishable and otherwise at exact-observable-group resolution; molecules whose truth origin is outside the fitted dictionary are excluded, and the evaluated molecule count and resolution are archived.",
+      "detection_sensitivity": "Truth-detectable candidates called detected divided by the number of truth-detectable candidates.",
+      "detection_false_discovery_rate": "Called candidates that are not truth-detectable divided by the number of called candidates; defined as zero when there are no calls. Archive truth-detectable, called, and true-positive counts beside both rates.",
+      "identifiability_singular_values": "All direct singular values, in descending NumPy SVD order, of diag(sqrt(class_count)) times the row-centered candidate log-likelihood matrix; retained status is singular_value > 1e-12 * largest_singular_value."
+    },
+    "feature_metric_applicability": "Isoform, PTM-marginal, and PTM-pair errors are not reported for the O3 out-of-dictionary artifact mixture because its artifact feature truth is not represented by candidate abundance weights. Under exact unresolved groups, a feature metric is reported only when that feature or feature pair is constant within every group; otherwise it is null.",
+    "not_applicable_rule": "For a method that emits only a top label or uncalibrated binary support, do not report log score, Brier score, ECE, top-5 recall, posterior entropy, reliability, or posterior-based OOD metrics. Top-1 accuracy remains applicable under the declared lowest-index exact-tie rule because it evaluates the emitted label rather than probability calibration."
+  },
+  "outputs": {
+    "root": "outputs/model-violation-benchmark-v4",
+    "required_files": [
+      "manifest.json",
+      "provenance.json",
+      "candidate_dictionary.tsv",
+      "probe_panel.tsv",
+      "scenario_index.tsv",
+      "runs.tsv",
+      "paired_contrasts.tsv",
+      "summary.tsv",
+      "bootstrap_intervals.tsv",
+      "bootstrap_diagnostics.tsv",
+      "coverage_summary.tsv",
+      "failures.tsv",
+      "reliability.tsv",
+      "ood_metrics.tsv",
+      "identifiability_diagnostics.tsv",
+      "identifiability_singular_values.tsv",
+      "feature_metrics.tsv",
+      "figure_data.tsv",
+      "execution_status.json",
+      "output_checksums.sha256"
+    ],
+    "run_id_template": "{tier}__{scenario_id}__mc{seed_index_1_based:02d}-seed{master_seed}__bio{biological_index_1_based:02d}__tech{technical_index_1_based:02d}__{method_id}",
+    "run_schema": [
+      "manifest_id:string",
+      "run_id:string",
+      "tier:string",
+      "scenario_id:string",
+      "scenario_family:string",
+      "paired_reference:string",
+      "method_id:string",
+      "master_seed:int",
+      "seed_index_1_based:int",
+      "biological_replicate_id:string",
+      "technical_run_id:string",
+      "n_source:int",
+      "n_accepted:int",
+      "n_candidates_fit:int",
+      "n_active_truth:int",
+      "n_logical_probes:int",
+      "n_cycles:int",
+      "missing_fraction:float",
+      "trace_likelihood_classes:int",
+      "dense_entries_per_iteration:int",
+      "status:string",
+      "failure_code:nullable_string",
+      "failure_reason:nullable_string",
+      "converged:nullable_bool",
+      "retry_used:bool",
+      "iterations:nullable_int",
+      "terminal_em_residual:nullable_float",
+      "minimum_log_likelihood_gain:nullable_float",
+      "last_log_likelihood_gain:nullable_float",
+      "max_weight_change:nullable_float",
+      "wall_seconds:float",
+      "peak_RSS_bytes:int",
+      "metrics_valid:bool",
+      "abundance_resolution:nullable_string",
+      "truth_out_of_dictionary_mass:nullable_float",
+      "total_variation:nullable_float",
+      "jensen_shannon_base2:nullable_float",
+      "candidate_MAE:nullable_float",
+      "candidate_RMSE:nullable_float",
+      "maximum_absolute_error:nullable_float",
+      "detection_sensitivity:nullable_float",
+      "detection_false_discovery_rate:nullable_float",
+      "n_truth_detectable:nullable_int",
+      "n_called_detected:nullable_int",
+      "n_true_positive_detected:nullable_int",
+      "n_false_positive_detected:nullable_int",
+      "group_total_variation:nullable_float",
+      "log_score:nullable_float",
+      "Brier_score:nullable_float",
+      "ECE_10_equal_frequency:nullable_float",
+      "top1_accuracy:nullable_float",
+      "top5_recall:nullable_float",
+      "posterior_entropy:nullable_float",
+      "posterior_entropy_resolution:nullable_string",
+      "posterior_entropy_evaluated_n:nullable_int",
+      "data_sha256:string",
+      "result_sha256:string"
+    ],
+    "summary_schema": [
+      "manifest_id:string",
+      "tier:string",
+      "scenario_id:string",
+      "paired_reference:nullable_string",
+      "comparison_type:nullable_string",
+      "reference_scenario_id:nullable_string",
+      "reference_method_id:nullable_string",
+      "method_id:string",
+      "metric:string",
+      "n_planned:int",
+      "n_valid:int",
+      "n_failed:int",
+      "mean:nullable_float",
+      "sample_SD:nullable_float",
+      "Monte_Carlo_SE:nullable_float",
+      "median:nullable_float",
+      "q25:nullable_float",
+      "q75:nullable_float",
+      "paired_mean_difference:nullable_float",
+      "paired_difference_sample_SD:nullable_float",
+      "paired_difference_Monte_Carlo_SE:nullable_float",
+      "headline_eligible:bool"
+    ],
+    "provenance_required": [
+      "manifest_sha256",
+      "git_commit",
+      "git_dirty",
+      "command",
+      "creation_time_utc",
+      "python_version",
+      "numpy_version",
+      "dependency_lock_sha256",
+      "source_sha256",
+      "hardware_without_device_identifiers",
+      "contains_actual_nautilus_data=false",
+      "fitted_to_actual_nautilus_raw_data=false",
+      "maximum_concurrent_workers=2",
+      "worker_blas_threads=1",
+      "worker_thread_environment",
+      "deterministic_archive_order=seed_major_then_scenario_manifest_order",
+      "debug_gate_archives"
+    ],
+    "execution_status_schema": {
+      "schema_version": "string",
+      "manifest_id": "string",
+      "tier": "string",
+      "execution_scope": "string",
+      "status": "passed|failed|not_applicable",
+      "reasons": "array[{code:string,message:string}]",
+      "counts": "object"
+    },
+    "paired_contrast_schema": [
+      "manifest_id:string",
+      "tier:string",
+      "comparison_type:string",
+      "scenario_id:string",
+      "paired_reference:string",
+      "method_id:string",
+      "reference_method_id:string",
+      "master_seed:int",
+      "metric:string",
+      "scenario_value:nullable_float",
+      "reference_value:nullable_float",
+      "paired_difference:nullable_float",
+      "pair_valid:bool"
+    ],
+    "bootstrap_diagnostic_schema": [
+      "manifest_id:string",
+      "run_id:string",
+      "tier:string",
+      "scenario_id:string",
+      "method_id:string",
+      "master_seed:int",
+      "bootstrap_index_0_based:int",
+      "status:string",
+      "retry_used:nullable_bool",
+      "initial_status:nullable_string",
+      "initial_iterations:nullable_int",
+      "initial_terminal_em_residual:nullable_float",
+      "initial_last_log_likelihood_gain:nullable_float",
+      "initial_max_weight_change:nullable_float",
+      "final_iterations:nullable_int",
+      "final_terminal_em_residual:nullable_float",
+      "final_last_log_likelihood_gain:nullable_float",
+      "final_max_weight_change:nullable_float",
+      "failure_code:nullable_string",
+      "failure_reason:nullable_string"
+    ],
+    "identifiability_diagnostic_schema": [
+      "manifest_id:string",
+      "run_id:string",
+      "tier:string",
+      "scenario_id:string",
+      "method_id:string",
+      "master_seed:int",
+      "n_observable_groups:int",
+      "n_unresolved_groups:int",
+      "maximum_group_size:int",
+      "centered_likelihood_rank:int",
+      "centered_likelihood_singular_max:float",
+      "centered_likelihood_singular_min_retained:float",
+      "centered_likelihood_condition_number:float",
+      "relative_singular_value_floor:float",
+      "plus_0_05_Q_status:nullable_string",
+      "plus_0_05_Q_retry_used:nullable_bool",
+      "plus_0_05_Q_iterations:nullable_int",
+      "plus_0_05_Q_terminal_em_residual:nullable_float",
+      "plus_0_05_Q_last_log_likelihood_gain:nullable_float",
+      "plus_0_05_Q_max_weight_change:nullable_float",
+      "plus_0_05_Q_weight_TV:nullable_float",
+      "minus_0_05_Q_status:nullable_string",
+      "minus_0_05_Q_retry_used:nullable_bool",
+      "minus_0_05_Q_iterations:nullable_int",
+      "minus_0_05_Q_terminal_em_residual:nullable_float",
+      "minus_0_05_Q_last_log_likelihood_gain:nullable_float",
+      "minus_0_05_Q_max_weight_change:nullable_float",
+      "minus_0_05_Q_weight_TV:nullable_float",
+      "maximum_plus_or_minus_0_05_Q_weight_TV:nullable_float"
+    ],
+    "identifiability_singular_value_schema": [
+      "manifest_id:string",
+      "run_id:string",
+      "tier:string",
+      "scenario_id:string",
+      "method_id:string",
+      "master_seed:int",
+      "singular_value_index_0_based:int",
+      "singular_value:float",
+      "retained_above_relative_floor:bool"
+    ],
+    "feature_metric_schema": [
+      "manifest_id:string",
+      "run_id:string",
+      "tier:string",
+      "scenario_id:string",
+      "method_id:string",
+      "master_seed:int",
+      "isoform_total_variation:nullable_float",
+      "PTM_marginal_MAE:nullable_float",
+      "PTM_pair_MAE:nullable_float"
+    ],
+    "coverage_summary_schema": [
+      "manifest_id:string",
+      "tier:string",
+      "scenario_id:string",
+      "method_id:string",
+      "estimand_type:string",
+      "estimand_id:string",
+      "n_intervals:int",
+      "n_valid_intervals:int",
+      "covered:int",
+      "coverage:nullable_float",
+      "coverage_wilson_lower:nullable_float",
+      "coverage_wilson_upper:nullable_float",
+      "mean_width:nullable_float",
+      "median_width:nullable_float",
+      "headline_eligible:bool"
+    ],
+    "figure_data_schema": [
+      "manifest_id:string",
+      "tier:string",
+      "row_type:string",
+      "value_kind:absolute_mean|paired_mean_difference|reliability_bin",
+      "scenario_id:string",
+      "scenario_family:string",
+      "paired_reference:nullable_string",
+      "comparison_type:nullable_string",
+      "reference_scenario_id:nullable_string",
+      "reference_method_id:nullable_string",
+      "method_id:string",
+      "metric:string",
+      "resolution:string",
+      "estimate:nullable_float",
+      "uncertainty:nullable_float",
+      "bin_index:nullable_int",
+      "bin_lower:nullable_float",
+      "bin_upper:nullable_float",
+      "count:nullable_int",
+      "mean_confidence:nullable_float",
+      "accuracy:nullable_float",
+      "reportable:bool"
+    ]
+  },
+  "supersedes_manifest_id": "proteoem-tau768-systematic-v3",
+  "change_control": {
+    "status": "frozen",
+    "v1_execution_status": "preflighted_but_full_primary_grid_unexecuted",
+    "reason_v1_full_grid_was_not_executed": "Exact preflights projected 10.6 to 11.1 days of wall time for the complete v1 primary design, and the projected bootstrap work conflicted with the v1 per-scenario-seed bootstrap cap. Shrinking v1 in place was prohibited, so the design was superseded rather than silently substituted.",
+    "v1_manifest_sha256": "e86ba9a6bb75f223fb012670fe8887e12fdd838ccd65b0eb40c616bc3c7cef49",
+    "preflight_evidence": [
+      {
+        "role": "exact_v1_primary_B1_seed7_all_point_methods_without_bootstrap",
+        "git_commit": "6a7038f741060a1f4d1bcbf43533c50267ae3e08"
+      },
+      {
+        "role": "exact_v1_debug_B1_seed7_full_25_resample_bootstrap_after_retry_fix",
+        "git_commit": "28c26f11521b6e70272ef70ef78c735608307c60"
+      }
+    ],
+    "projected_v1_full_primary_wall_days": {
+      "lower": 10.6,
+      "upper": 11.1
+    },
+    "v2_operational_completion_target_wall_hours": {
+      "lower": 2.0,
+      "upper": 4.0,
+      "basis": "Machine-specific planning target for 360 scenario-seed cells, 500 point-method runs, and 3000 fixed-Q bootstrap refits with two isolated workers; not a scientific or platform-performance claim."
+    },
+    "v3_operational_completion_target_wall_hours": {
+      "lower": 2.0,
+      "upper": 6.0,
+      "basis": "Machine-specific planning range retaining the v2 workload while allowing the longer audited retry trajectory in the near-identifiability cells; not a scientific or platform-performance claim."
+    },
+    "v4_operational_completion_target_wall_hours": {
+      "lower": 2.0,
+      "upper": 6.0,
+      "basis": "Machine-specific planning range retaining the v3 simulation and fit workload while completing the declared reporting contract; not a scientific or platform-performance claim."
+    },
+    "v3_execution_status": "two_full_debug_archives_passed_primary_interrupted_before_archive_after_reporting_contract_audit",
+    "v3_manifest_sha256": "36b02cf856d43ffbe19d5a34ae55edbcb0b5b031f36ae1666400dae5aaad9a18",
+    "v3_manifest_canonical_sha256": "c0a0bd549372cacbc2c35560874a13b859eca09b5b43a3dbf0a100b4ff79fb35",
+    "v3_debug_evidence": {
+      "git_commit": "196601e28ad642673fc7cd1d3e18496afe41a464",
+      "archive_A_output_checksums_sha256": "e856b3ca093884e254aacf8589f523b9da63b8f8591040db4b2bb8612affeb5e",
+      "archive_B_output_checksums_sha256": "c26a07c0de8b046725dfba8bf5119cd509686895bc4fb2e3432d7ba10ac51606",
+      "execution_status": "passed",
+      "observed_point_runs_per_archive": 75,
+      "observed_bootstrap_diagnostics_per_archive": 90,
+      "non_headline": true
+    },
+    "v3_reporting_contract_audit": {
+      "primary_archive_created": false,
+      "primary_was_interrupted_before_archive": true,
+      "reason": "The pre-publication schema audit found that v3 declared maximum absolute abundance error, PTM-pair error, detection metrics, posterior entropy, and the full singular spectrum without archiving them, and did not enforce the declared non-applicability of probability calibration for binary support. V4 preserves v3 simulation and fit semantics while making those outputs and applicability rules executable and gate-validated."
+    },
+    "v2_execution_status": "full_debug_failed_no_primary_run",
+    "v2_manifest_sha256": "629d88d9c49037ebc395f1bec3cbceb5b54555fab1d1b2ba734467824557b696",
+    "v2_failed_debug_evidence": {
+      "git_commit": "d96b6e580c9cdc12db32900e6905717e0f31963b",
+      "retained_archive_relative_path": "outputs/model-violation-benchmark-v2-debug-failed",
+      "archive_output_checksums_sha256": "45136e437f5063ed7eb35091447ae9bcfa0281015638cd57e49365fcaca35aee",
+      "execution_status": "failed",
+      "failed_scenario_id": "I1_anti4R_contrast025",
+      "failed_master_seeds": [7, 17, 27],
+      "failure_code": "em_nonconvergence",
+      "retry_iteration_cap": 1000,
+      "terminal_fixed_point_residuals": [
+        2.1266461220498245e-08,
+        2.9507595112585093e-08,
+        4.032944195264676e-08
+      ],
+      "non_headline": true
+    },
+    "diagnostic_continuation_evidence": {
+      "purpose": "Non-archival diagnosis of the failed v2 debug cells using the unchanged data, initialization, EM update, and 1e-8 stopping tolerances.",
+      "converged_iterations_by_seed": {
+        "7": 1294,
+        "17": 1409,
+        "27": 1481
+      },
+      "interpretation": "The objective criterion and monotonicity check already passed at iteration 1000; the near-identifiable I1 weights required additional deterministic EM iterations to satisfy the unchanged 1e-8 maximum-weight-change criterion."
+    },
+    "primary_i1_convergence_preflight": {
+      "purpose": "Non-archival convergence audit of the exact N=10000 I1 point-fit path before freezing v3; downstream metrics, SVD, bootstrap, and archive writing were excluded.",
+      "audited_master_seeds": [7, 17, 27, 37, 47, 57, 67, 77, 87, 97, 107, 117, 127, 137, 147, 157, 167, 177, 187, 197],
+      "retry_iterations_by_seed": {
+        "7": 2526,
+        "17": 1654,
+        "27": 1884,
+        "37": 2466,
+        "47": 1121,
+        "57": 1855,
+        "67": 1081,
+        "77": 782,
+        "87": 1621,
+        "97": 1873,
+        "107": 3891,
+        "117": 5780,
+        "127": 1068,
+        "137": 1204,
+        "147": 1855,
+        "157": 2602,
+        "167": 1828,
+        "177": 1520,
+        "187": 2629,
+        "197": 1622
+      },
+      "maximum_observed_retry_iterations": 5780,
+      "maximum_observed_point_wall_seconds": 281.2762,
+      "maximum_observed_process_RSS_approx_MiB": 674,
+      "all_converged_at_retry_cap_10000": true,
+      "all_monotonic_and_terminal_residual_at_most_1e-7": true,
+      "wall_cap_rationale": "The seed-117 5000-iteration retry consumed 284.2086 seconds under two-process audit contention and still required 780 more iterations; a 600-second scenario-seed point cap provides measured concurrency margin for the declared two-worker schedule."
+    },
+    "debug_i1_identifiability_preflight": {
+      "purpose": "Non-archival audit of the exact N=5000 I1 point fit, direct-SVD conditioning, and both warm-start Q-sensitivity paths before freezing v3.",
+      "audited_master_seeds": [7, 17, 27],
+      "point_retry_iterations_by_seed": {
+        "7": 1294,
+        "17": 1409,
+        "27": 1481
+      },
+      "centered_likelihood_rank_by_seed": {
+        "7": 10,
+        "17": 10,
+        "27": 10
+      },
+      "centered_likelihood_condition_number_by_seed": {
+        "7": 18.3206,
+        "17": 19.6143,
+        "27": 17.7214
+      },
+      "plus_0_05_Q_final_iterations_by_seed": {
+        "7": 601,
+        "17": 790,
+        "27": 1896
+      },
+      "minus_0_05_Q_final_iterations_by_seed": {
+        "7": 821,
+        "17": 441,
+        "27": 301
+      },
+      "maximum_identifiability_wall_seconds": 46.73,
+      "maximum_total_seed_wall_seconds": 84.38,
+      "maximum_observed_process_RSS_bytes": 530497536,
+      "all_point_and_sensitivity_fits_status_ok": true,
+      "all_direct_svd_ranks_and_conditions_finite": true,
+      "all_within_declared_wall_and_RSS_limits": true
+    },
+    "v3_rationale": "Preserve the complete v2 scientific design while increasing the declared nonconvergence retry ceiling from 1000 to 10000 iterations and the scenario-seed point wall cap from 300 to 600 seconds. The v2 debug failure and the all-seed N=10000 I1 preflight showed expected slow EM contraction in the predeclared near-identifiability scenario, not a stopping-loop defect. V3 also gives numerical-safety failures precedence over iteration exhaustion, corrects identifiability conditioning to use direct singular values rather than a Gram matrix, avoids spurious rank from squared-condition-number roundoff, and adds terminal convergence diagnostics to archived rows.",
+    "rationale": "Preserve every v3 data-generation, seed, estimator, stopping, retry, resource, bootstrap, contrast, and headline rule while completing the metric inventory and making method-level applicability executable. The change is reporting-only: v4 adds the previously declared metrics and full singular spectrum, masks calibration-style outputs for uncalibrated binary support, and makes archive validation reject missing or inapplicable metric products.",
+    "headline_eligible": false,
+    "immutability_rule": "Do not edit this frozen manifest in place after execution; any scientific or operational change requires a new manifest_id and retained archives."
+  },
+  "version_change_summary": [
+    "V4 preserves the complete v3 18-scenario design, N=10000/5000 tier sizes, 20/3 seed grids, estimators, convergence and resource policy, bootstrap design, contrasts, and headline rules.",
+    "Runs now archive maximum absolute abundance error, full-dictionary detection sensitivity and false-discovery rate, and posterior entropy with explicit candidate/group resolution and applicability.",
+    "Feature diagnostics now archive mean absolute error over all 21 unordered PTM pairs.",
+    "A dedicated identifiability_singular_values.tsv archives every direct singular value and its 1e-12-relative-floor retention flag, while identifiability_diagnostics.tsv retains rank, condition, and Q-sensitivity summaries.",
+    "Probability calibration, reliability, posterior entropy, and posterior-based OOD outputs are forced to not applicable for top-label and uncalibrated binary-support methods.",
+    "Modern full-tier validation now enforces the declared metric inventory, singular-spectrum completeness, and non-applicability rules before an archive can pass.",
+    "V3 remains immutable: two complete clean debug archives passed at commit 196601e28ad6, but the primary attempt was interrupted before archiving when the reporting-contract mismatch was detected.",
+    "The output root changes to outputs/model-violation-benchmark-v4; full primary retains the clean-Git and two-deterministic-debug-archive gate."
+  ]
+}
