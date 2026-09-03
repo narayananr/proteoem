@@ -1,12 +1,11 @@
 # ProteoEM
 
-Finite-mixture inference for iterative single-molecule affinity proteomics.
+ProteoEM quantifies proteins and proteoforms from single-molecule affinity traces.
 
-ProteoEM estimates the relative abundance of proteins or proteoforms in a
-sample from their affinity traces. It treats each trace as probabilistic
-evidence over candidate origins, keeps that evidence graded instead of forcing
-a single identity, and combines the traces by expectation-maximization (EM)
-using a probe emission model calibrated beforehand from known origins.
+It treats each trace as probabilistic evidence over candidate origins, keeps
+that evidence graded instead of forcing a single identity, and combines the
+traces by expectation-maximization (EM) using a probe emission model calibrated
+beforehand from known origins.
 
 - Pure Python, one runtime dependency (NumPy).
 - A likelihood interface plus an EM kernel that handles both calibrated
