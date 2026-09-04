@@ -383,6 +383,26 @@ def render(mode, resp, expected_counts, weights, outdir):
     return save(fig, outdir, f"method-{mode}", t)
 
 
+def render_measurement(mode, outdir):
+    """Panels A-C only: the trace, the call matrix and the emission matrix.
+
+    The split in panel D shows a fitted result, so a piece of writing that has
+    not walked through the fit yet should use this version instead of the full
+    figure. Same panels, same code, no orphaned numbers.
+    """
+    t = THEMES[mode]
+    rcparams()
+
+    fig = plt.figure(figsize=(16, 4.6), facecolor=t["surface"])
+    gs = fig.add_gridspec(1, 3, left=0.012, right=0.988, top=0.94, bottom=0.04,
+                          wspace=0.06)
+    panel_a(fig.add_subplot(gs[0, 0]), t)
+    panel_b(fig.add_subplot(gs[0, 1]), t)
+    panel_c(fig.add_subplot(gs[0, 2]), t)
+
+    return save(fig, outdir, f"measurement-{mode}", t)
+
+
 def main():
     outdir = Path(__file__).resolve().parent
     outdir.mkdir(parents=True, exist_ok=True)
@@ -399,6 +419,8 @@ def main():
 
     for mode in ("light", "dark"):
         stem = render(mode, resp, expected_counts, weights, outdir)
+        print(f"wrote {stem}.svg and {stem}@2x.png")
+        stem = render_measurement(mode, outdir)
         print(f"wrote {stem}.svg and {stem}@2x.png")
 
 

@@ -204,6 +204,10 @@ responsibilities sum to one, and that they accumulate to the reported expected
 counts. It fails rather than emitting a figure that disagrees with the model.
 Both themes and the vector versions are written to `docs/figures/`.
 
+`make_method_figure.py` also writes a three-panel `measurement-*` variant, panels
+A to C only. Panel D shows a fitted split, so writing that has not walked through
+the fit yet should use that version rather than leave the numbers unexplained.
+
 `docs/figures/make_platform_figure.py` renders a companion schematic of the
 measurement itself, for talks and supplementary material. Its output is not
 committed, so run the script to produce it. Both scripts share one palette and
