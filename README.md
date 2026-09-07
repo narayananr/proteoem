@@ -188,6 +188,15 @@ python -m pip install -e ".[test]"
 python -m pytest
 ```
 
+## Reproducing the analysis
+
+The benchmarks and their data plots reproduce from `scripts/`. For a single
+command, run `make reproduce` (benchmarks, then the analysis figures); `make
+help` lists every target, and [`TUTORIAL.md`](TUTORIAL.md) walks through each
+script one at a time — what it writes, roughly how long it takes, and how to vary
+it. The manuscript PDF and the schematic figures are built in a separate
+manuscript repository, not here.
+
 Frozen benchmark manifests used by the model-violation grid live under
 `configs/`.
 

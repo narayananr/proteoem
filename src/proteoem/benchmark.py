@@ -178,9 +178,19 @@ def default_tau_logical_probe_rates(
 
 
 def sparse_tau_weights(
-    panel: TauLikePanel, *, n_active: int = 32, seed: int | None = 1
+    panel: TauLikePanel,
+    *,
+    n_active: int = 32,
+    concentration: float = 0.4,
+    seed: int | None = 1,
 ) -> NDArray[np.float64]:
-    """Create a seeded sparse abundance vector with every isoform represented."""
+    """Create a seeded sparse abundance vector with every isoform represented.
+
+    ``concentration`` is the symmetric Dirichlet concentration on the active
+    states: values below one give a heavy-tailed composition (a few dominant
+    states, many rare), larger values a flatter one. The default 0.4 matches the
+    frozen benchmark, so the default draw is unchanged.
+    """
 
     if not isinstance(n_active, (int, np.integer)) or not (
         len(ISOFORM_LABELS) <= n_active <= panel.n_candidates
@@ -188,6 +198,12 @@ def sparse_tau_weights(
         raise ValueError(
             f"n_active must be between {len(ISOFORM_LABELS)} and {panel.n_candidates}"
         )
+    if (
+        isinstance(concentration, bool)
+        or not isinstance(concentration, (int, float, np.floating, np.integer))
+        or float(concentration) <= 0.0
+    ):
+        raise ValueError("concentration must be a positive number")
     rng = np.random.default_rng(seed)
     isoform_array = np.asarray(panel.isoforms)
     mandatory = [
@@ -204,7 +220,7 @@ def sparse_tau_weights(
     )
     active = np.concatenate((np.asarray(mandatory), np.asarray(extra, dtype=int)))
     weights = np.zeros(panel.n_candidates, dtype=float)
-    draws = rng.gamma(shape=0.4, scale=1.0, size=active.size)
+    draws = rng.gamma(shape=float(concentration), scale=1.0, size=active.size)
     weights[active] = draws / draws.sum()
     weights.setflags(write=False)
     return weights
@@ -243,6 +259,8 @@ def run_tau_like_benchmark(
     *,
     n_molecules: int = 5_000,
     n_active: int = 32,
+    concentration: float = 0.4,
+    repeats: int = 3,
     missing_rate: float = 0.02,
     seed: int = 7,
     max_iter: int = 300,
@@ -250,12 +268,20 @@ def run_tau_like_benchmark(
     block_size: int | None = 4096,
     return_responsibilities: bool = False,
 ) -> TauBenchmarkResult:
-    """Run one reproducible oracle-calibrated synthetic benchmark."""
+    """Run one reproducible oracle-calibrated synthetic benchmark.
 
-    panel = make_tau_like_panel(repeats=3)
+    ``concentration`` sets the symmetric Dirichlet concentration on the active
+    states (see :func:`sparse_tau_weights`) and ``repeats`` sets the number of
+    physical passes per logical probe (cycles ``C = 12 * repeats``). The
+    defaults reproduce the frozen benchmark exactly.
+    """
+
+    panel = make_tau_like_panel(repeats=repeats)
     alpha, beta = default_tau_probe_rates(panel)
     logical_alpha, logical_beta = default_tau_logical_probe_rates(panel)
-    truth = sparse_tau_weights(panel, n_active=n_active, seed=seed)
+    truth = sparse_tau_weights(
+        panel, n_active=n_active, concentration=concentration, seed=seed
+    )
     simulation = simulate_traces(
         panel.profiles,
         n_molecules,

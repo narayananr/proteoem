@@ -152,6 +152,19 @@ def build_parser() -> argparse.ArgumentParser:
     benchmark.add_argument("--output", type=Path, required=True)
     benchmark.add_argument("--molecules", type=int, default=5_000)
     benchmark.add_argument("--active", type=int, default=32)
+    benchmark.add_argument(
+        "--concentration",
+        type=float,
+        default=0.4,
+        help="symmetric Dirichlet concentration on active states "
+        "(<1 heavy-tailed, larger flatter; default 0.4 matches the frozen benchmark)",
+    )
+    benchmark.add_argument(
+        "--repeats",
+        type=int,
+        default=3,
+        help="physical passes per logical probe (cycles = 12 x repeats; default 3)",
+    )
     benchmark.add_argument("--missing-rate", type=float, default=0.02)
     benchmark.add_argument("--seed", type=int, default=7)
     benchmark.add_argument("--max-iter", type=int, default=300)
@@ -171,6 +184,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         result = run_tau_like_benchmark(
             n_molecules=args.molecules,
             n_active=args.active,
+            concentration=args.concentration,
+            repeats=args.repeats,
             missing_rate=args.missing_rate,
             seed=args.seed,
             max_iter=args.max_iter,
@@ -182,6 +197,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             "command": "benchmark-tau",
             "molecules": args.molecules,
             "active": args.active,
+            "concentration": args.concentration,
+            "repeats": args.repeats,
             "missing_rate": args.missing_rate,
             "seed": args.seed,
             "trace_seed": args.seed + 1,
