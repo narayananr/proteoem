@@ -1,226 +1,186 @@
-# ProteoEM: step-by-step tutorial
+# Using ProteoEM on your own data
 
-This walks through every analysis script in the repository one at a time: what it
-does, the exact command, what it writes, and roughly how long it takes.
+ProteoEM estimates how much of each candidate protein or proteoform is present in
+a sample from ambiguous single-molecule affinity traces. This guide shows how to
+run it on **your own data**.
 
-This repository reproduces the **analysis** — the benchmarks and their data plots.
-The manuscript PDF and the schematic/illustration figures are built in a separate
-manuscript repository and are not part of this code repo.
+(To reproduce the paper's benchmarks and plots instead, see `make reproduce` and
+the README's "Reproducing the analysis" — that is a separate concern from using
+the tool.)
 
-For a single command that runs the whole analysis pipeline, use `make reproduce`
-(see the end of this file). This tutorial is for running and understanding each
-piece on its own.
+All inference is a single call to `fit_em`. The work is preparing its three
+inputs and reading its outputs.
 
-**Interpreter note.** The commands below assume your Python environment is
-active. If it is not, prefix the interpreter path, for example
-`.venv/bin/python` instead of `python`, or pass it to `make`:
-`make PYTHON=.venv/bin/python <target>`.
+## 1. What ProteoEM needs
 
-All data are simulated. Nothing here is Nautilus data or a validation of any
-commercial assay.
-
----
-
-## 0. Set up (once)
-
-```bash
-python -m pip install -e ".[figures,test]"   # package + figure/test extras
-python -m pytest -q                           # optional sanity check
-```
-
-`make install` runs the first line; `make test` runs the second.
-
----
-
-## 1. Quick synthetic benchmark — the CLI
-
-**What it does.** Simulates one tau-like dataset (768 candidate proteoforms, 12
-logical probes over 36 cycles) and fits weighted EM plus the two reduced
-baselines. The fastest way to see the method run end to end.
-
-```bash
-python -m proteoem.cli benchmark-tau --output outputs/tau-demo --molecules 5000 --seed 7
-```
-
-**Writes.** `outputs/tau-demo/`: `summary.json` (metrics, config, environment),
-`abundances.tsv` (truth vs. each estimate), `panel.tsv`. Add `--save-traces` for
-the raw molecule-by-cycle matrix and simulation truth.
-
-**Run with other parameters.** All knobs are exposed:
-
-```bash
-# flatter composition (fewer rare states) and only two passes per probe
-python -m proteoem.cli benchmark-tau --output outputs/tau-flat \
-  --molecules 20000 --seed 7 --concentration 1.0 --repeats 2 --active 40
-```
-
-| Flag | Meaning | Default |
+| Input | Shape | Meaning |
 |---|---|---|
-| `--molecules` | accepted traces to simulate | 5000 |
-| `--active` | present proteoforms (rest are zero) | 32 |
-| `--concentration` | Dirichlet concentration on active states (`<1` heavy-tailed, larger flatter) | 0.4 |
-| `--repeats` | physical passes per logical probe (`cycles = 12 × repeats`) | 3 |
-| `--missing-rate` | fraction of calls set to NA | 0.02 |
-| `--seed` | reproducible RNG seed | 7 |
-| `--max-iter`, `--tol`, `--block-size` | EM stopping and blocking | 300, 1e-7, 4096 |
+| `observations` (Y) | N × C, int8 | one row per accepted molecule, one column per physical cycle; each entry is `1` (positive call), `0` (negative call), or `-1` (NA / no usable call) |
+| `cycle_to_probe` | length C, int | `cycle_to_probe[c]` is the logical-probe index used in cycle `c` (repeated applications of a probe share an index) |
+| `Q` | K × J, float | `Q[k, j]` is the probability that logical probe `j` gives a positive call on origin `k`, calibrated beforehand and held fixed |
 
-**Time:** seconds. `make smoke` runs the default command.
+`K` is the number of candidate origins, `J` the number of logical probes, `C` the
+number of physical cycles (`C ≥ J` when probes repeat). Instead of `Q` you can
+pass a binary feature matrix and per-probe rates (Section 3).
 
----
+## 2. A minimal run
 
-## 2. Trace-class scale audit
+```python
+import numpy as np
+from proteoem import fit_em
 
-**What it does.** Counts identical, exchangeable-repeat, and relative
-trace-likelihood classes as the molecule count grows, showing how grouping
-compresses the E-step and why the affinity likelihood table stays dense.
+# 3 molecules, 6 cycles = 3 logical probes applied twice.
+observations = np.array([
+    [1, 0, -1, 1, 0, 0],
+    [0, 1,  0, 0, 1, 1],
+    [1, 0,  1, 1, 0, 1],
+], dtype=np.int8)
+cycle_to_probe = np.array([0, 1, 2, 0, 1, 2])
+
+# K=2 candidate origins x J=3 logical probes: calibrated positive-call rates.
+Q = np.array([
+    [0.90, 0.10, 0.80],
+    [0.15, 0.85, 0.80],
+])
+
+fit = fit_em(observations, Q=Q, cycle_to_probe=cycle_to_probe,
+             return_responsibilities=True)
+
+print(fit.weights)            # estimated composition, sums to 1
+print(fit.converged)          # check this before trusting anything
+print(fit.responsibilities)   # posterior over origins, one row per trace class (T x K, T <= N)
+```
+
+`fit.weights[k]` is the estimated fraction of accepted molecules from origin `k`.
+
+## 3. Building Q
+
+Two routes, both calibrated on known-origin standards **before** you fit:
+
+- **Direct.** For each origin–probe pair, `Q[k, j]` is the positive-call fraction
+  of probe `j` on control molecules of known origin `k`.
+- **Structured.** Give a binary feature matrix `E` (`E[k, j] = 1` if origin `k`
+  carries the feature probe `j` targets) and per-probe on/off-target rates, and
+  let ProteoEM build `Q`:
+
+```python
+from proteoem import build_emission_matrix
+Q = build_emission_matrix(E, alpha=alpha, beta=beta)   # Q = E*alpha + (1-E)*beta
+# ...or pass E straight to fit_em:
+fit = fit_em(observations, E, alpha=alpha, beta=beta, cycle_to_probe=cycle_to_probe)
+```
+
+`alpha`/`beta` may be scalars or length-J vectors (per probe). The structured form
+is a convenience; it does not substitute for validating that the feature model
+matches your reagents.
+
+## 4. Reading the results
+
+`fit` (an `EMResult`) carries:
+
+- `fit.weights` — estimated composition (K-vector, sums to 1).
+- `fit.converged` — `True` if the fit met tolerance; do not interpret a
+  non-converged fit.
+- `fit.responsibilities` — posterior probability of each origin (columns) for each
+  distinct trace class (rows), when `return_responsibilities=True`. ProteoEM groups
+  identical traces, so this has one row per class (T ≤ N), not one per molecule;
+  `fit.aggregated` holds the class counts and maps molecules to classes.
+- `fit.observable_groups` — tuples of origin indices the panel **cannot** tell
+  apart (identical emissions). Only a group's combined abundance is identifiable,
+  so report the group total, `fit.weights[list(group)].sum()`, and never the split
+  within a group.
+- `fit.diagnostics` — `terminal_em_residual`, `monotonic`,
+  `expected_count_total_error`, support density, and more.
+
+## 5. Repeated probes and missing calls
+
+Repeating a probe adds a **cycle**, not a logical probe: point the extra column at
+the same `cycle_to_probe` index. ProteoEM groups the repeats by their
+positive/observed counts, so their order does not matter — unless a repeat is
+calibrated differently, in which case give it its own probe index and `Q` column.
+
+An NA (`-1`) is skipped under the default ignorable-missingness model: it is not a
+negative call and not a third outcome. If missingness depends on the hidden call
+or the origin (bright spots saturating and suppressing positives, say), that needs
+an explicit model — see the supplement's informative-missingness section.
+
+## 6. Bring-your-own likelihood
+
+If you compute the evidence yourself — continuous intensities, correlated cycles,
+a censoring model — skip `Q` and pass a precomputed log-likelihood matrix to
+`fit_likelihood_em`:
+
+```python
+from proteoem import fit_likelihood_em
+fit = fit_likelihood_em(log_likelihoods, return_responsibilities=True)
+```
+
+`log_likelihoods` is N×K (log-likelihood of each molecule under each origin). Only
+the across-origin comparison within a row matters, so a row-wide additive constant
+is harmless; a per-origin offset is not. Classifier scores or already-normalized
+posteriors are **not** likelihoods and must not be passed here.
+
+## 7. Accepted-sample vs source composition
+
+`fit.weights` is composition among the molecules you **fed the fitter** — the
+accepted traces. If a molecule is harder to recover, or more likely to fail your
+inclusion rule, it is underrepresented there. To recover the composition of the
+original sample, apply an **effective observation yield** `e_k = r_k · v_k`
+(physical recovery × the probability a molecule of origin `k` passes the gate):
+
+```python
+from proteoem import effective_observation_yield, analyzed_to_source_composition
+e = effective_observation_yield(recovery, visibility)     # e_k = r_k * v_k
+theta = analyzed_to_source_composition(fit.weights, e)    # source: theta_k proportional to pi_k / e_k
+```
+
+When a probe-based rule decides which traces are kept (e.g. "keep only traces with
+a positive call"), the per-trace likelihood must **also** be conditioned on the
+gate: `positive_gate_visibility(Q, ...)` gives `v_k`, and
+`condition_on_deterministic_gate` renormalizes the likelihood over surviving
+traces. Apply the two corrections once each — one in the likelihood, one on the
+final weights — never the same one twice. Yields must be calibrated externally;
+they cannot be learned from the accepted traces alone.
+
+## 8. Applying it to real iterative-affinity data
+
+A real iterative single-molecule affinity assay outputs exactly ProteoEM's
+inputs, so the work is a thin adapter, not new modeling:
+
+| Assay output | ProteoEM input |
+|---|---|
+| per-molecule binary bind/no-bind trace across cycles | `observations` (Y) |
+| the cycle → antibody/probe schedule | `cycle_to_probe` |
+| antibody on/off-target rates from control-proteoform calibration | `Q` |
+| the candidate proteoform panel (which antibody targets which feature) | the K origins / feature matrix `E` |
+| the inclusion rule (e.g. require a positive N-terminal AND a positive C-terminal call) | the retention gate — condition the likelihood, calibrate visibility (Section 7) |
+
+Write a small function from your export format to `(observations, cycle_to_probe,
+Q)` and call `fit_em`. Validate first on control mixtures of **known** composition,
+where you have ground truth; treat biological-sample estimates as model output,
+not truth.
+
+## 9. What to check
+
+- `fit.converged` is `True`.
+- Report `fit.observable_groups` totals; never interpret within-group splits.
+- Flag trace classes whose maximum `fit.responsibilities` is low — those are the
+  molecules whose true origin may be **outside** your candidate panel.
+- Check calibration (expected calibration error, Brier score) against control
+  mixtures before trusting a biological sample.
+
+ProteoEM is currently evaluated in simulation only; it has not been validated on
+real molecule-level data. Use it as a transparent, auditable estimator, and
+establish its behavior on your own controls.
+
+## Command line
+
+For a quick end-to-end check without writing code, the CLI runs one synthetic
+tau-like dataset through the whole pipeline:
 
 ```bash
-python scripts/audit_trace_class_scale.py \
-  --output outputs/trace-class-scale/summary.tsv \
-  --molecules 5000 200000 1000000 --mixture-seed 7 --trace-seed 8
+proteoem benchmark-tau --output outputs/tau-demo --molecules 5000 --seed 7
+# vary the simulation: --concentration, --repeats, --active, --missing-rate, --molecules
 ```
 
-**Writes.** `outputs/trace-class-scale/summary.tsv`. **Time:** ~1–2 min (the
-1,000,000 count dominates). `make bench-scale`.
-
----
-
-## 3. Multi-seed empirical benchmark
-
-**What it does.** Runs the correctly specified design across molecule counts and
-seeds, each in a fresh process, recording per-run class sizes, timings, peak
-memory, convergence, and abundance metrics.
-
-```bash
-python scripts/run_empirical_benchmark.py run \
-  --output outputs/empirical-benchmark \
-  --molecules 1000 5000 20000 --seeds 7 17 27 \
-  --active 32 --missing-rate 0.02 --max-iter 300 --tol 1e-7 \
-  --block-size 4096 --validation-max-molecules 5000
-```
-
-**Writes.** `outputs/empirical-benchmark/`: per-run and summary tables, likelihood
-histories, exact-compression checks, environment metadata, source hashes.
-**Time:** ~2–5 min. `make bench-empirical`. `--molecules` and `--seeds` take
-lists, so `--molecules 1000 --seeds 7` gives a quick check.
-
----
-
-## 4. Independent correctness checks
-
-**What it does.** Compares fixed-emission EM against a separate projected-gradient
-simplex optimizer and a separately implemented incidence EM, and runs a
-predeclared likelihood-ratio threshold sweep.
-
-```bash
-python scripts/run_independent_correctness_checks.py \
-  --output outputs/independent-correctness-checks
-```
-
-**Writes.** `outputs/independent-correctness-checks/`: optimizer and
-deterministic-binary comparisons, all threshold-sweep runs, frozen config,
-environment metadata, source hashes, summary. **Time:** ~1–3 min.
-`make bench-correctness`.
-
----
-
-## 5. Observation-yield benchmark (and its figure)
-
-**What it does.** A two-origin study separating accepted-trace composition (`π`)
-from source composition (`θ`) under three keep-rules, plus a confidence-filtered
-hard decode as a biased comparator.
-
-```bash
-python scripts/run_observation_yield_benchmark.py \
-  --output outputs/observation-yield-benchmark \
-  --molecules 50000 --seeds 7 17 27 37 47 --max-iter 500 --tol 1e-9
-
-python scripts/render_observation_yield_figure.py     # reads the archive above
-```
-
-**Writes.** `outputs/observation-yield-benchmark/` and
-`figures/figure5_observation_yield_benchmark.svg`. **Time:** ~1–3 min for the
-benchmark, seconds for the figure. `make bench-yield`, then `make figures`.
-
-> The figure reads `outputs/observation-yield-benchmark/`, so run the benchmark
-> first (or point `--input` at an existing archive).
-
----
-
-## 6. Systematic model-violation grid
-
-**What it does.** Runs the frozen 18-scenario grid (missingness, Q error, repeat
-dependence, identifiability, candidate omission, OOD artifacts). The runner
-consumes the frozen manifest directly and never silently substitutes a smaller
-run.
-
-```bash
-python scripts/run_model_violation_benchmark.py \
-  --manifest configs/systematic_benchmark_manifest_v4.json \
-  --tier debug --output /tmp/proteoem-model-violation-v4-debug
-```
-
-**Writes.** A self-describing archive under the chosen `--output`.
-**Time:** several minutes at the `debug` tier.
-
-- `--tier debug` is the runnable smoke of the grid; `--tier primary` is the full
-  authoritative run and needs a clean Git snapshot.
-- Narrow the run with `--scenario-id`, `--master-seed`, or `--method-id`.
-- `make model-violation` runs the debug-tier command above.
-
----
-
-## 7. Analysis figures
-
-**What it does.** Renders the paper's data plots.
-
-```bash
-python scripts/figures/render_evidence_accumulation.py  # posterior evidence over probing
-python scripts/figures/render_abundance_parity.py       # estimated vs true abundance
-python scripts/render_observation_yield_figure.py       # observation-yield results
-```
-
-**Writes.** `figures/<name>.png` and `.pdf` (each matplotlib script takes
-`--output` as a path stem and `--seed`). **Time:** seconds each. `make figures`.
-
-- `render_evidence_accumulation` and `render_abundance_parity` regenerate their
-  data deterministically from the seed — no benchmark output needed.
-- `render_observation_yield_figure` reads the Step 5 archive.
-- **Fig 7 (model-violation cost)** reads a model-violation `summary.tsv`, so it is
-  a separate step. Generate an archive (Step 6) and point the script at it:
-
-  ```bash
-  make model-violation
-  python scripts/figures/render_violation_cost.py \
-    --summary /tmp/proteoem-model-violation-v4-debug/summary.tsv
-  # or: make figure-violation-cost MV_SUMMARY=/tmp/proteoem-model-violation-v4-debug/summary.tsv
-  ```
-
-- The schematic/illustration figures (measurement-to-inference, trace-to-likelihood,
-  information-borrowing, the generative-model pipeline, panel identifiability) are
-  built in the manuscript repository, not here.
-
----
-
-## Run order and dependencies
-
-```
-benchmarks (Steps 2–6) ──▶ analysis figures (Step 7)
-                            ▲
-   observation-yield figure needs the Step 5 archive; Fig 7 needs a Step 6 archive
-```
-
-Steps 1–6 can run in any order. `render_evidence_accumulation` and
-`render_abundance_parity` need nothing but the seed.
-
-## One command
-
-```bash
-make reproduce                            # benchmarks -> analysis figures
-make help                                 # list every target
-make PYTHON=.venv/bin/python reproduce    # use a specific interpreter
-```
-
-`make reproduce` runs the reproducible benchmarks, then the seed/benchmark-driven
-analysis figures. Fig 7 is the separate `make figure-violation-cost` target
-because it needs a model-violation archive.
+See `proteoem benchmark-tau --help` for all flags.

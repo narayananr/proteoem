@@ -131,6 +131,10 @@ This writes `summary.json`, `abundances.tsv`, and `panel.tsv` under the output
 directory. Add `--save-traces` to also retain the generated molecule-by-cycle
 matrix and simulation truth. See `proteoem benchmark-tau --help` for all flags.
 
+For a fuller guide to using ProteoEM on your own data — preparing the inputs,
+calibrating `Q`, the accepted-versus-source yield correction, and reading the
+results — see [`TUTORIAL.md`](TUTORIAL.md).
+
 ## How it works
 
 Let `Y` be a molecule-by-physical-cycle call matrix and let `cycle_to_probe[c]`
@@ -192,10 +196,11 @@ python -m pytest
 
 The benchmarks and their data plots reproduce from `scripts/`. For a single
 command, run `make reproduce` (benchmarks, then the analysis figures); `make
-help` lists every target, and [`TUTORIAL.md`](TUTORIAL.md) walks through each
-script one at a time — what it writes, roughly how long it takes, and how to vary
-it. The manuscript PDF and the schematic figures are built in a separate
-manuscript repository, not here.
+help` lists every target. The manuscript PDF and the schematic figures are built
+in a separate manuscript repository, not here.
+
+To use ProteoEM as a tool on your own data — rather than reproduce the paper —
+see [`TUTORIAL.md`](TUTORIAL.md).
 
 Frozen benchmark manifests used by the model-violation grid live under
 `configs/`.
