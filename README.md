@@ -201,7 +201,10 @@ help` lists every target. The manuscript PDF and the schematic figures are built
 in a separate manuscript repository, not here.
 
 To use ProteoEM as a tool on your own data — rather than reproduce the paper —
-see [`TUTORIAL.md`](TUTORIAL.md).
+see [`TUTORIAL.md`](TUTORIAL.md). To learn the method by simulating a sample from
+a known composition and scoring the estimate against it, see
+[`SIMULATION_TUTORIAL.md`](SIMULATION_TUTORIAL.md) (run it with
+`examples/simulate_and_quantify.py --plots`).
 
 Frozen benchmark manifests used by the model-violation grid live under
 `configs/`.

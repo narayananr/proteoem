@@ -13,7 +13,7 @@ inputs and reading its outputs.
 
 ## Runnable examples
 
-Two scripts under `examples/` walk this whole guide, so you can run it rather than
+Scripts under `examples/` walk this whole guide, so you can run it rather than
 only read it:
 
 - **`examples/try_proteoem.py`** — sections 1–7 on small hand-built arrays, one
@@ -31,6 +31,12 @@ python examples/try_proteoem.py
 python examples/try_from_file.py     # first run writes examples/tau_example/*.tsv, then fits
 python examples/multi_sample.py      # quantifies a cohort into a long cpm table
 ```
+
+To **learn the method** by simulating a sample from a known composition and
+scoring the estimate against that truth, see the companion walkthrough
+[`SIMULATION_TUTORIAL.md`](SIMULATION_TUTORIAL.md) and its script
+`examples/simulate_and_quantify.py`. That is about understanding ProteoEM; this
+guide is about running it on your own data.
 
 ## 1. What ProteoEM needs
 
