@@ -11,6 +11,23 @@ the tool.)
 All inference is a single call to `fit_em`. The work is preparing its three
 inputs and reading its outputs.
 
+## Runnable examples
+
+Two scripts under `examples/` walk this whole guide, so you can run it rather than
+only read it:
+
+- **`examples/try_proteoem.py`** — sections 1–7 on small hand-built arrays, one
+  `print` per step. Best for seeing the API mechanics.
+- **`examples/try_from_file.py`** — the same idea on a realistic tau dataset (768
+  candidate proteoforms, 12 probes over 36 cycles). It writes the dataset out as
+  human-readable TSVs, then reads them back and fits — the file-based workflow of
+  section 8, and the closest thing to running on your own export.
+
+```bash
+python examples/try_proteoem.py
+python examples/try_from_file.py     # first run writes examples/tau_example/*.tsv, then fits
+```
+
 ## 1. What ProteoEM needs
 
 | Input | Shape | Meaning |
