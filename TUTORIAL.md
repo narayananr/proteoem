@@ -188,20 +188,21 @@ sample lanes — and, as in RNA-seq, **each sample is quantified on its own**: a
 independent fit, one output file per sample. There is no joint multi-sample model.
 
 Every fit writes the same **general, truth-free** file, `proteoform_abundances.tsv`,
-in the paper's cpm unit:
+in the paper's cpm unit, carrying **flow-cell and lane** provenance so a sample
+traces back to its physical position:
 
 ```
-sample    candidate                                 estimated_cpm
-brain_A   1N3R|pT181+pS202_pT205+pS214+pT217+pS396  175599
-brain_A   0N4R|pT181+pS202_pT205                    109925
+flowcell  lane  sample   candidate                                 estimated_cpm
+fc1       1     brain_A  1N3R|pT181+pS202_pT205+pS214+pT217+pS396  175599
+fc1       1     brain_A  0N4R|pT181+pS202_pT205                    109925
 ...
 ```
 
-The CLI writes it per run, labelled with `--sample`:
+The CLI writes it per run, labelled with `--sample`, `--lane`, and `--flowcell`:
 
 ```bash
-proteoem benchmark-tau --output out/brain_A --sample brain_A --seed 7
-proteoem benchmark-tau --output out/brain_B --sample brain_B --seed 8
+proteoem benchmark-tau --output out/brain_A --sample brain_A --lane 1 --seed 7
+proteoem benchmark-tau --output out/brain_B --sample brain_B --lane 2 --seed 8
 ```
 
 To build a cohort, concatenate the per-sample files — like assembling an RNA-seq

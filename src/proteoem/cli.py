@@ -23,6 +23,8 @@ def _write_benchmark(
     save_traces: bool,
     configuration: dict[str, object],
     sample: str = "sample_1",
+    flowcell: str = "fc1",
+    lane: str = "1",
 ) -> None:
     output.mkdir(parents=True, exist_ok=True)
     truth = result.simulation.weights
@@ -70,12 +72,14 @@ def _write_benchmark(
     weighted = result.weighted_fit.weights
     with (output / "proteoform_abundances.tsv").open("w", newline="", encoding="utf-8") as handle:
         writer = csv.writer(handle, delimiter="\t")
-        writer.writerow(["sample", "candidate", "estimated_cpm"])
+        writer.writerow(["flowcell", "lane", "sample", "candidate", "estimated_cpm"])
         ranked = sorted(range(len(weighted)), key=lambda k: float(weighted[k]), reverse=True)
         for candidate in ranked:
             cpm = int(round(float(weighted[candidate]) * 1e6))
             if cpm >= 1:
-                writer.writerow([sample, result.panel.candidate_ids[candidate], cpm])
+                writer.writerow(
+                    [flowcell, lane, sample, result.panel.candidate_ids[candidate], cpm]
+                )
 
     with (output / "panel.tsv").open("w", newline="", encoding="utf-8") as handle:
         writer = csv.writer(handle, delimiter="\t")
@@ -200,6 +204,14 @@ def build_parser() -> argparse.ArgumentParser:
         help="sample label for the general, truth-free proteoform_abundances.tsv "
         "output (run with different labels and concatenate to build a cohort table)",
     )
+    benchmark.add_argument(
+        "--flowcell", default="fc1",
+        help="flow-cell id recorded as provenance in proteoform_abundances.tsv",
+    )
+    benchmark.add_argument(
+        "--lane", default="1",
+        help="lane within the flow cell (an experiment has 4-12 lanes, one per sample)",
+    )
     benchmark.add_argument("--max-iter", type=int, default=300)
     benchmark.add_argument("--tol", type=float, default=1e-7)
     benchmark.add_argument("--block-size", type=int, default=4096)
@@ -239,6 +251,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             "tol": args.tol,
             "block_size": args.block_size,
             "sample": args.sample,
+            "flowcell": args.flowcell,
+            "lane": args.lane,
             "return_responsibilities": False,
         }
         _write_benchmark(
@@ -247,6 +261,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             save_traces=args.save_traces,
             configuration=configuration,
             sample=args.sample,
+            flowcell=args.flowcell,
+            lane=args.lane,
         )
         printed = {
             "metrics_valid": result.metrics_valid,

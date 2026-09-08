@@ -150,10 +150,10 @@ def main() -> None:
     out_path = DATA / "proteoform_abundances.tsv"
     with out_path.open("w", newline="") as f:
         w = csv.writer(f, delimiter="\t")
-        w.writerow(["sample", "candidate", "estimated_cpm"])
+        w.writerow(["flowcell", "lane", "sample", "candidate", "estimated_cpm"])
         for k in np.argsort(est)[::-1]:
             if est[k] * observations.shape[0] >= 20:      # detected proteoforms only
-                w.writerow(["sample_1", cand_ids[k], int(round(est_cpm[k]))])
+                w.writerow(["fc1", "1", "sample_1", cand_ids[k], int(round(est_cpm[k]))])
     print(f"wrote {out_path.name}  (general, truth-free abundances in cpm; one file per sample)")
 
     # --- read off the answer, compared to the (known) truth ----------------
