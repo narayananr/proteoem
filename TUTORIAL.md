@@ -22,10 +22,14 @@ only read it:
   candidate proteoforms, 12 probes over 36 cycles). It writes the dataset out as
   human-readable TSVs, then reads them back and fits — the file-based workflow of
   section 8, and the closest thing to running on your own export.
+- **`examples/multi_sample.py`** — quantifies a small cohort and writes one
+  long/tidy `proteoform_abundances.tsv` (one row per sample × proteoform, in cpm),
+  the multiple-sample format (see "Quantifying multiple samples" below).
 
 ```bash
 python examples/try_proteoem.py
 python examples/try_from_file.py     # first run writes examples/tau_example/*.tsv, then fits
+python examples/multi_sample.py      # quantifies a cohort into a long cpm table
 ```
 
 ## 1. What ProteoEM needs
@@ -177,7 +181,28 @@ Q)` and call `fit_em`. Validate first on control mixtures of **known** compositi
 where you have ground truth; treat biological-sample estimates as model output,
 not truth.
 
-## 9. What to check
+## 9. Quantifying multiple samples
+
+ProteoEM fits one sample at a time — like the assay itself, which estimates
+per-sample antibody behaviour, so each sample is an independent fit with no joint
+model. To quantify a cohort, loop over samples, fit each, and collect the results
+into a **long, sample-keyed table in cpm**:
+
+```
+sample     sample_group   candidate                        estimated_cpm
+healthy_1  control        1N3R|pT181+pS202_pT205+pS214...   165964
+healthy_1  control        0N4R|pT181+pS202_pT205            115665
+disease_1  ADRD           ...                               ...
+```
+
+That shape is what scales — one row per sample × proteoform — and it matches the
+paper's released schema (`sample, sample_group, proteoform, abundance_cpm`). Pivot
+it to a proteoform × sample matrix for cross-sample z-scoring, clustering, or
+differential-abundance tests. The wide single-sample `abundances.tsv` the CLI
+writes (now with `*_cpm` columns) is per run; this long table is what holds a whole
+cohort. `examples/multi_sample.py` builds it.
+
+## 10. What to check
 
 - `fit.converged` is `True`.
 - Report `fit.observable_groups` totals; never interpret within-group splits.

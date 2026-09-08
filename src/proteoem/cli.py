@@ -36,17 +36,30 @@ def _write_benchmark(
                 "hard_ml",
                 "binary_incidence_em",
                 "weighted_affinity_em",
+                "truth_cpm",
+                "hard_ml_cpm",
+                "binary_incidence_em_cpm",
+                "weighted_affinity_em_cpm",
             ]
         )
         for candidate, candidate_id in enumerate(result.panel.candidate_ids):
+            t = float(truth[candidate])
+            h = float(result.hard_weights[candidate])
+            b = float(result.incidence_fit.weights[candidate])
+            w = float(result.weighted_fit.weights[candidate])
+            # counts per million = fraction * 1e6, the unit the IMaP paper reports
             writer.writerow(
                 [
                     candidate,
                     candidate_id,
-                    f"{truth[candidate]:.12g}",
-                    f"{result.hard_weights[candidate]:.12g}",
-                    f"{result.incidence_fit.weights[candidate]:.12g}",
-                    f"{result.weighted_fit.weights[candidate]:.12g}",
+                    f"{t:.12g}",
+                    f"{h:.12g}",
+                    f"{b:.12g}",
+                    f"{w:.12g}",
+                    round(t * 1e6),
+                    round(h * 1e6),
+                    round(b * 1e6),
+                    round(w * 1e6),
                 ]
             )
 
