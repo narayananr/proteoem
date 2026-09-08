@@ -127,8 +127,9 @@ Run the bundled synthetic benchmark from the command line:
 proteoem benchmark-tau --output outputs/tau-demo --molecules 5000 --seed 7
 ```
 
-This writes `summary.json`, `abundances.tsv`, and `panel.tsv` under the output
-directory. Add `--save-traces` to also retain the generated molecule-by-cycle
+This writes `proteoform_abundances.tsv` (your abundances, one row per proteoform
+in cpm) plus `benchmark_comparison.tsv` (the simulation benchmark: truth and the
+baseline methods), `panel.tsv`, and `summary.json` under the output directory. Add `--save-traces` to also retain the generated molecule-by-cycle
 matrix and simulation truth. See `proteoem benchmark-tau --help` for all flags.
 
 For a fuller guide to using ProteoEM on your own data — preparing the inputs,

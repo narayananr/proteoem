@@ -192,17 +192,17 @@ in the paper's cpm unit, carrying **flow-cell and lane** provenance so a sample
 traces back to its physical position:
 
 ```
-flowcell  lane  sample   candidate                                 estimated_cpm
-fc1       1     brain_A  1N3R|pT181+pS202_pT205+pS214+pT217+pS396  175599
-fc1       1     brain_A  0N4R|pT181+pS202_pT205                    109925
-...
+flowcell  lane  sample   sample_group  candidate_id                              estimated_cpm
+fc1       1     brain_A  control       1N3R|pT181+pS202_pT205+pS214+pT217+pS396  175599
+fc1       1     brain_A  control       0N4R|pT181+pS202_pT205                    109925
+...   (every candidate is written, like an RNA-seq quantifier; threshold downstream)
 ```
 
 The CLI writes it per run, labelled with `--sample`, `--lane`, and `--flowcell`:
 
 ```bash
-proteoem benchmark-tau --output out/brain_A --sample brain_A --lane 1 --seed 7
-proteoem benchmark-tau --output out/brain_B --sample brain_B --lane 2 --seed 8
+proteoem benchmark-tau --output out/brain_A --sample brain_A --lane 1 --sample-group control --seed 7
+proteoem benchmark-tau --output out/brain_B --sample brain_B --lane 2 --sample-group disease --seed 8
 ```
 
 To build a cohort, concatenate the per-sample files — like assembling an RNA-seq
@@ -212,8 +212,8 @@ proteoform × sample matrix for z-scoring, clustering, or differential tests.
 
 **Truth stays out of it.** `proteoform_abundances.tsv` is the estimate only, so it
 is identical for real and simulated data. Ground truth exists only in simulation
-and lives in a separate file (`true_abundance.tsv`, or the benchmark's
-`abundances.tsv`) — never in the general output.
+and lives in a separate file (`true_abundances.tsv`, or the benchmark's
+`benchmark_comparison.tsv`) — never in the general output.
 
 ## 10. What to check
 

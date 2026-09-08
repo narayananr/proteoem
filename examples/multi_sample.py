@@ -10,7 +10,7 @@ behaviour, so each sample is an independent fit and there is no joint model. To
 quantify a cohort you loop over samples, fit each, and append its proteoform
 abundances (in cpm) to a long table keyed by sample. The schema
 
-    flowcell    lane    sample    sample_group    candidate    estimated_cpm
+    flowcell    lane    sample    sample_group    candidate_id    estimated_cpm
 
 mirrors the paper's released format (flowcell, sample, sample_group, proteoform,
 abundance_cpm): one row per (sample, proteoform), which is what scales to a
@@ -44,16 +44,16 @@ for name, group, lane, seed in SAMPLES:
     est = np.asarray(r.weighted_fit.weights)         # fraction, sums to 1
     cand = r.panel.candidate_ids
     n_detected = 0
-    for k in np.argsort(est)[::-1]:
-        if est[k] * N_MOLECULES >= 20:               # detected in THIS sample
-            rows.append((FLOWCELL, lane, name, group, cand[k], int(round(est[k] * 1e6))))  # cpm
+    for k in np.argsort(est)[::-1]:                  # every candidate, ranked
+        rows.append((FLOWCELL, lane, name, group, cand[k], int(round(est[k] * 1e6))))  # cpm
+        if est[k] * N_MOLECULES >= 20:
             n_detected += 1
     print(f"  fit {name:11s} (lane {lane}, {group:7s}, seed {seed:>2d}): {n_detected} proteoforms detected")
 
 out_path = OUT / "cohort_abundances.tsv"
 with out_path.open("w", newline="") as f:
     w = csv.writer(f, delimiter="\t")
-    w.writerow(["flowcell", "lane", "sample", "sample_group", "candidate", "estimated_cpm"])
+    w.writerow(["flowcell", "lane", "sample", "sample_group", "candidate_id", "estimated_cpm"])
     w.writerows(rows)
 
 print(f"\nwrote {out_path.name}: {len(rows)} sample-proteoform rows across {len(SAMPLES)} samples")

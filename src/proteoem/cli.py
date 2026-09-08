@@ -25,11 +25,15 @@ def _write_benchmark(
     sample: str = "sample_1",
     flowcell: str = "fc1",
     lane: str = "1",
+    sample_group: str = "",
 ) -> None:
     output.mkdir(parents=True, exist_ok=True)
     truth = result.simulation.weights
 
-    with (output / "abundances.tsv").open("w", newline="", encoding="utf-8") as handle:
+    # Simulation benchmark comparison: truth + the three method estimates. Only
+    # benchmark-tau writes this; it is NOT the general answer (that is
+    # proteoform_abundances.tsv) and its `truth` column is meaningful only here.
+    with (output / "benchmark_comparison.tsv").open("w", newline="", encoding="utf-8") as handle:
         writer = csv.writer(handle, delimiter="\t")
         writer.writerow(
             [
@@ -66,20 +70,22 @@ def _write_benchmark(
                 ]
             )
 
-    # General, truth-free abundance file: the estimate only, in cpm, one file per
-    # sample (like an RNA-seq quantifier). This is the shape that also fits real
-    # data; truth lives only in abundances.tsv, which a simulation benchmark has.
+    # The answer: general, truth-free abundances -- the weighted-EM estimate in cpm,
+    # one file per sample (like an RNA-seq quantifier), EVERY candidate reported.
+    # Same schema for one sample or a cohort, so cohorts are built by concatenation.
     weighted = result.weighted_fit.weights
     with (output / "proteoform_abundances.tsv").open("w", newline="", encoding="utf-8") as handle:
         writer = csv.writer(handle, delimiter="\t")
-        writer.writerow(["flowcell", "lane", "sample", "candidate", "estimated_cpm"])
+        writer.writerow(
+            ["flowcell", "lane", "sample", "sample_group", "candidate_id", "estimated_cpm"]
+        )
         ranked = sorted(range(len(weighted)), key=lambda k: float(weighted[k]), reverse=True)
         for candidate in ranked:
             cpm = int(round(float(weighted[candidate]) * 1e6))
-            if cpm >= 1:
-                writer.writerow(
-                    [flowcell, lane, sample, result.panel.candidate_ids[candidate], cpm]
-                )
+            writer.writerow(
+                [flowcell, lane, sample, sample_group,
+                 result.panel.candidate_ids[candidate], cpm]
+            )
 
     with (output / "panel.tsv").open("w", newline="", encoding="utf-8") as handle:
         writer = csv.writer(handle, delimiter="\t")
@@ -212,6 +218,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--lane", default="1",
         help="lane within the flow cell (an experiment has 4-12 lanes, one per sample)",
     )
+    benchmark.add_argument(
+        "--sample-group", dest="sample_group", default="",
+        help="optional sample-group label (e.g. control/disease) recorded in "
+        "proteoform_abundances.tsv",
+    )
     benchmark.add_argument("--max-iter", type=int, default=300)
     benchmark.add_argument("--tol", type=float, default=1e-7)
     benchmark.add_argument("--block-size", type=int, default=4096)
@@ -253,6 +264,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "sample": args.sample,
             "flowcell": args.flowcell,
             "lane": args.lane,
+            "sample_group": args.sample_group,
             "return_responsibilities": False,
         }
         _write_benchmark(
@@ -263,6 +275,12 @@ def main(argv: Sequence[str] | None = None) -> int:
             sample=args.sample,
             flowcell=args.flowcell,
             lane=args.lane,
+            sample_group=args.sample_group,
+        )
+        print(
+            f"abundances written to {args.output}/proteoform_abundances.tsv "
+            "(one row per proteoform, in cpm)",
+            file=sys.stderr,
         )
         printed = {
             "metrics_valid": result.metrics_valid,

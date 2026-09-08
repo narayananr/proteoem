@@ -14,11 +14,11 @@ The files it uses (this is the shape a real export would have):
   traces.tsv          N molecules x 36 cycles, values 1 / 0 / -1 (positive/neg/NA)
   probe_schedule.tsv  which logical probe each of the 36 cycles used
   emission_Q.tsv      768 candidates x 12 probes, the calibrated positive-call rates
-  true_abundance.tsv  the ground truth in cpm (a real dataset would NOT have this)
+  true_abundances.tsv the ground truth in cpm (a real dataset would NOT have this)
 
 It writes the fit back out as proteoform_abundances.tsv in counts per million
 (cpm = fraction * 1e6, the IMaP paper's unit) -- the general, truth-free output,
-one file per sample, like an RNA-seq quantifier.
+one file per sample, like an RNA-seq quantifier, reporting every candidate.
 """
 import csv
 from pathlib import Path
@@ -69,13 +69,13 @@ def generate_example_files(datadir: Path) -> None:
 
     with (datadir / "emission_Q.tsv").open("w", newline="") as f:
         w = csv.writer(f, delimiter="\t")
-        w.writerow(["candidate"] + probes)
+        w.writerow(["candidate_id"] + probes)
         for name, qrow in zip(cand, Q):
             w.writerow([name] + [f"{v:.4f}" for v in qrow])
 
-    with (datadir / "true_abundance.tsv").open("w", newline="") as f:
+    with (datadir / "true_abundances.tsv").open("w", newline="") as f:
         w = csv.writer(f, delimiter="\t")
-        w.writerow(["candidate", "true_cpm"])   # counts per million, the unit the paper reports
+        w.writerow(["candidate_id", "true_cpm"])   # counts per million, the paper's unit
         for name, t in zip(cand, truth):
             if t > 0:
                 w.writerow([name, int(round(t * 1e6))])
@@ -150,14 +150,13 @@ def main() -> None:
     out_path = DATA / "proteoform_abundances.tsv"
     with out_path.open("w", newline="") as f:
         w = csv.writer(f, delimiter="\t")
-        w.writerow(["flowcell", "lane", "sample", "candidate", "estimated_cpm"])
-        for k in np.argsort(est)[::-1]:
-            if est[k] * observations.shape[0] >= 20:      # detected proteoforms only
-                w.writerow(["fc1", "1", "sample_1", cand_ids[k], int(round(est_cpm[k]))])
+        w.writerow(["flowcell", "lane", "sample", "sample_group", "candidate_id", "estimated_cpm"])
+        for k in np.argsort(est)[::-1]:                    # every candidate, ranked
+            w.writerow(["fc1", "1", "sample_1", "", cand_ids[k], int(round(est_cpm[k]))])
     print(f"wrote {out_path.name}  (general, truth-free abundances in cpm; one file per sample)")
 
     # --- read off the answer, compared to the (known) truth ----------------
-    truth = load_truth(DATA / "true_abundance.tsv")
+    truth = load_truth(DATA / "true_abundances.tsv")
     truth_vec = np.array([truth.get(c, 0.0) for c in cand_ids])
     tv = 0.5 * float(np.sum(np.abs(est - truth_vec)))     # TV is computed on fractions
     order = np.argsort(est)[::-1][:10]
