@@ -48,7 +48,7 @@ for name, group, seed in SAMPLES:
             n_detected += 1
     print(f"  fit {name:11s} ({group:7s}, seed {seed:>2d}): {n_detected} proteoforms detected")
 
-out_path = OUT / "proteoform_abundances.tsv"
+out_path = OUT / "cohort_abundances.tsv"
 with out_path.open("w", newline="") as f:
     w = csv.writer(f, delimiter="\t")
     w.writerow(["sample", "sample_group", "candidate", "estimated_cpm"])

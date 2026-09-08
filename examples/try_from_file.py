@@ -16,8 +16,9 @@ The files it uses (this is the shape a real export would have):
   emission_Q.tsv      768 candidates x 12 probes, the calibrated positive-call rates
   true_abundance.tsv  the ground truth in cpm (a real dataset would NOT have this)
 
-It writes the fit back out as estimated_abundance.tsv in counts per million (cpm),
-the same unit the IMaP paper reports (cpm = fraction * 1e6).
+It writes the fit back out as proteoform_abundances.tsv in counts per million
+(cpm = fraction * 1e6, the IMaP paper's unit) -- the general, truth-free output,
+one file per sample, like an RNA-seq quantifier.
 """
 import csv
 from pathlib import Path
@@ -143,16 +144,17 @@ def main() -> None:
 
     # --- save the estimate in the paper's unit -----------------------------
     # fit.weights is a fraction (sums to 1).  counts-per-million = fraction * 1e6,
-    # which is exactly how the IMaP paper reports abundances.
+    # exactly how the IMaP paper reports abundances.  This is the general, truth-free
+    # output: one file per sample, like an RNA-seq quantifier.
     est_cpm = est * 1e6
-    out_path = DATA / "estimated_abundance.tsv"
+    out_path = DATA / "proteoform_abundances.tsv"
     with out_path.open("w", newline="") as f:
         w = csv.writer(f, delimiter="\t")
-        w.writerow(["candidate", "estimated_cpm"])
+        w.writerow(["sample", "candidate", "estimated_cpm"])
         for k in np.argsort(est)[::-1]:
             if est[k] * observations.shape[0] >= 20:      # detected proteoforms only
-                w.writerow([cand_ids[k], int(round(est_cpm[k]))])
-    print(f"wrote {out_path.name}  (abundances in counts per million, the paper's unit)")
+                w.writerow(["sample_1", cand_ids[k], int(round(est_cpm[k]))])
+    print(f"wrote {out_path.name}  (general, truth-free abundances in cpm; one file per sample)")
 
     # --- read off the answer, compared to the (known) truth ----------------
     truth = load_truth(DATA / "true_abundance.tsv")
