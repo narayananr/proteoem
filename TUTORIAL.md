@@ -119,6 +119,31 @@ matches your reagents.
 - `fit.diagnostics` — `terminal_em_residual`, `monotonic`,
   `expected_count_total_error`, support density, and more.
 
+### Per-molecule proteoform probabilities
+
+`fit.responsibilities` is indexed by trace *class*, not by molecule. For a direct
+per-molecule answer — the probability that each molecule came from each candidate —
+call `posterior_responsibilities` with the fitted weights:
+
+```python
+from proteoem import posterior_responsibilities
+post = posterior_responsibilities(observations, fit.weights, Q, cycle_to_probe=cycle_to_probe)
+# post[i, k] = P(molecule i came from candidate k); each row sums to 1.
+print(post[0])                 # molecule 0's probabilities over all candidates
+print(int(post[0].argmax()))   # its most likely origin
+```
+
+`post` is N×K: one row per molecule, one column per candidate, each row a proper
+distribution. Two cautions when reading a single `P(molecule i from candidate k)`:
+
+- **Unresolvable candidates.** If candidate `k` shares emissions with others (an
+  observable group), its individual probability is not identifiable. Report the
+  group's combined probability from `fit.observable_group_responsibilities`, never
+  the split within a group.
+- **Out-of-panel molecules.** A molecule whose largest `post` value is low has no
+  good match in the panel, so its true origin may lie outside your candidates. Flag
+  these rather than forcing an assignment (Section 10).
+
 ## 5. Repeated probes and missing calls
 
 Repeating a probe adds a **cycle**, not a logical probe: point the extra column at
