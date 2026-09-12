@@ -1,4 +1,13 @@
-"""Alignment-profile adapters and simple decoding baselines."""
+"""Alignment-profile adapters and simple decoding baselines.
+
+The two deliberately reduced comparators of Supplementary Methods S2.5, which the
+benchmark contrasts against weighted EM. ``alignment_profile_log_likelihoods``
+rounds the calibrated likelihoods to hard 0/1 compatibility (the input to
+binary-profile EM); ``hard_assignment_counts`` assigns each molecule to its single
+maximum-likelihood origin (top-likelihood counting). Both reduce each trace to a
+hard yes/no rather than keeping the graded likelihood, and both lose accuracy
+relative to weighted EM (manuscript Section 3.2).
+"""
 
 from __future__ import annotations
 
@@ -18,7 +27,8 @@ def alignment_profile_log_likelihoods(
     mode: Literal["best", "exact"] = "best",
     max_mismatches: int = 0,
 ) -> NDArray[np.float64]:
-    """Convert binary probe traces to a 0/1 candidate-alignment profile.
+    """Convert binary probe traces to a 0/1 candidate-alignment profile
+    (the binary-profile baseline of Supplementary Methods S2.5).
 
     Returned values are log incidence: zero for compatible candidates and
     negative infinity otherwise.  Missing calls are wildcards.  ``best``
@@ -72,7 +82,8 @@ def hard_assignment_counts(
     counts: Any | None = None,
     split_ties: bool = True,
 ) -> NDArray[np.float64]:
-    """Count maximum-likelihood candidate calls, optionally splitting ties."""
+    """Count maximum-likelihood candidate calls, optionally splitting ties
+    (top-likelihood counting, Supplementary Methods S2.5)."""
 
     logs = np.asarray(log_likelihoods, dtype=float)
     if logs.ndim != 2 or min(logs.shape) < 1:

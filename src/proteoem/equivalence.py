@@ -1,4 +1,11 @@
-"""Candidate equivalence classes under a fixed emission model."""
+"""Candidate equivalence classes under a fixed emission model.
+
+Detects the observable proteoform groups of manuscript main Eq 10: origins whose
+fixed emission rows are identical produce the same trace distribution, so only
+their combined abundance is identifiable and they are reported in aggregate.
+Grouping is by EXACT row equality; near-identifiability (origins that are close
+but not equal) is a separate diagnostic (Supplementary Methods S2.7).
+"""
 
 from __future__ import annotations
 
@@ -94,7 +101,8 @@ def find_equivalence_classes(
 
 
 def find_observable_groups(emission_rows: Any) -> EquivalenceResult:
-    """Group origins with exactly identical fixed emission distributions.
+    """Group origins with exactly identical fixed emission distributions
+    (the observable proteoform groups of main Eq 10).
 
     Origins with the same emission row produce the same trace distribution, so
     only their combined abundance is identifiable; the fitter reports these

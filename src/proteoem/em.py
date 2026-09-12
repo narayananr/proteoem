@@ -1,4 +1,34 @@
-"""Fixed-emission finite-mixture expectation maximization."""
+"""Fixed-emission finite-mixture expectation maximization.
+
+Estimation core of ProteoEM (manuscript Section 2.4). It fits the composition
+``pi`` of the accepted, analyzed molecules by expectation maximization over a
+*fixed* per-origin likelihood, so calibration (the emission matrix ``Q``, main
+Eq 1) stays separate from the abundance estimate.
+
+Each EM sweep is the two-step loop of main Eqs 5-8:
+  * E-step (Eq 7): split each molecule's single count across candidate origins in
+    proportion to ``pi_k * L_ik`` -- the posterior assignment probabilities, or
+    "responsibilities" ``gamma_ik``.
+  * M-step (Eq 8): sum those fractional counts over molecules and divide by N to
+    get the next ``pi``.
+It iterates to the fixed point of Eq 9. A fixed ``Q`` makes the objective concave
+in ``pi``, so the fit is well behaved and matches an independent optimizer.
+
+Two groupings, which must not be confused, keep it fast and honest:
+  * trace-likelihood classes (main Eq 11) group ROWS with proportional
+    likelihoods; their common row scale cancels from Eq 7, so they share
+    responsibilities and are scored once with a multiplicity. Built in
+    ``data``/``emissions``; ``fit_em`` additionally factors out
+    origin-independent (pan-tau) probes, preserving their absolute log-likelihood.
+  * observable proteoform groups (main Eq 10) combine COLUMNS whose emissions are
+    identical: such origins are unidentifiable individually and are reported only
+    in aggregate (``find_observable_groups``).
+
+Numerics: every likelihood row is centered by its max before the mixture weights
+are added, so a large origin-independent offset cannot swamp the weights, and the
+row-scale invariance of the supplied-likelihood interface (Supplementary S2.3) is
+preserved.
+"""
 
 from __future__ import annotations
 
@@ -57,7 +87,7 @@ def _normalize_weights(weights: Any, n_candidates: int) -> NDArray[np.float64]:
 def _posterior_from_logs(
     component_logs: NDArray[np.float64], weights: NDArray[np.float64]
 ) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
-    """Return normalized posteriors and row log normalizers.
+    """Return the E-step responsibilities (main Eq 7) and row log normalizers.
 
     Rows are centered before adding log mixture weights. This preserves the
     row-scale invariance of the likelihood interface and prevents a large
@@ -212,6 +242,12 @@ def _fit_component_logs(
         else _normalize_weights(initial_weights, n_candidates)
     )
 
+    # A row that is finite and identical across every origin (its likelihood is
+    # constant in k) contributes an equal factor to all candidates, so it cancels
+    # from the E-step responsibilities (Eq 7) and adds no mixture information.
+    # Detect these "uninformative" rows so the loop can skip them and restore their
+    # counts at the fitted composition -- a degenerate case of a trace-likelihood
+    # class (Eq 11) whose row is flat across origins.
     support_entries = 0
     uninformative_rows = np.empty(n_rows, dtype=bool)
     for start in range(0, n_rows, block):
@@ -243,6 +279,11 @@ def _fit_component_logs(
         informative_expected = np.zeros(n_candidates, dtype=float)
         converged = True
     else:
+        # Expectation-maximization over the informative rows (main Eqs 5-8). Each
+        # pass runs the E-step (Eq 7) to split every molecule's single count across
+        # candidate origins by responsibility, then the M-step (Eq 8) sets the next
+        # composition to the normalized expected counts, iterating to the fixed
+        # point of Eq 9.
         informative_block = _validate_block_size(block_size, informative_logs.shape[0])
         informative_expected, centered_log_likelihood, _ = _e_step_statistics(
             informative_logs,
@@ -253,7 +294,10 @@ def _fit_component_logs(
         )
         centered_history = [centered_log_likelihood]
         for iteration in range(1, int(max_iter) + 1):
+            # M-step (Eq 8): next composition = expected counts / N (normalize).
             updated = _normalize_weights(informative_expected, n_candidates)
+            # E-step (Eq 7) at the updated composition: recompute responsibilities
+            # and the expected counts they imply.
             updated_expected, updated_log_likelihood, _ = _e_step_statistics(
                 informative_logs,
                 informative_counts,
@@ -268,6 +312,8 @@ def _fit_component_logs(
             centered_log_likelihood = updated_log_likelihood
             centered_history.append(centered_log_likelihood)
             n_iter = iteration
+            # Converged at the Eq 9 fixed point once both the log-likelihood gain
+            # and the largest weight change fall below the tolerance.
             likelihood_stable = abs(last_gain) <= tol * (
                 1.0 + abs(centered_log_likelihood)
             )
@@ -448,7 +494,8 @@ def fit_likelihood_em(
     block_size: int | None = 4096,
     return_responsibilities: bool = True,
 ) -> LikelihoodEMResult:
-    """Estimate mixture weights from fixed per-class **log**-likelihood profiles.
+    """Estimate mixture weights from fixed per-class **log**-likelihood profiles
+    (the supplied-likelihood interface of Supplementary Methods S2.3).
 
     ``log_likelihoods`` is a class-by-origin matrix of ``log L_ik`` (use ``-inf``
     for structural zeros); ``counts`` gives each class's multiplicity.  The row
@@ -526,7 +573,15 @@ def fit_em(
     True
     """
 
+    # Emission matrix Q (main Eq 1): P(positive call | origin, probe), supplied
+    # directly or built from binary profiles with alpha/beta rates.
     q = build_emission_matrix(profiles, alpha=alpha, beta=beta, Q=Q)
+    # Build the class-by-origin log-likelihood matrix, compressing to exact
+    # relative trace-likelihood classes (Eq 11). Three input paths: pre-aggregated
+    # probe-count classes; raw calls plus a cycle-to-probe schedule (repeated
+    # probes reduced to per-probe sufficient counts, and origin-independent pan-tau
+    # probes factored out while their absolute log-likelihood is preserved); or raw
+    # calls scored per cycle with identical trace/mask rows grouped.
     if isinstance(observations, ProbeCountClasses):
         if counts is not None or cycle_to_probe is not None:
             raise ValueError(
@@ -595,6 +650,9 @@ def fit_em(
         return_responsibilities=return_responsibilities,
         copy_logs=False,
     )
+    # Observable proteoform groups (main Eq 10): origins with identical emissions
+    # over the observed probes are unidentifiable individually and are reported
+    # only in aggregate. With no observed probe, every origin collapses into one.
     if group_emissions.shape[1] == 0:
         observable_groups = (tuple(range(q.shape[0])),)
     else:
@@ -645,7 +703,8 @@ def posterior_responsibilities(
     *,
     cycle_to_probe: Any | None = None,
 ) -> NDArray[np.float64]:
-    """Calculate posterior assignment probabilities for fixed mixture weights."""
+    """Posterior assignment probabilities (responsibilities, main Eq 7) for fixed
+    mixture weights -- the per-molecule identification readout of Section 3.2."""
 
     q = np.asarray(Q, dtype=float)
     if q.ndim != 2:

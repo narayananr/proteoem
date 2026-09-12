@@ -1,4 +1,13 @@
-"""Emission models for binary iterative-affinity traces."""
+"""Emission models for binary iterative-affinity traces.
+
+Builds the fixed emission matrix ``Q`` (manuscript main Eq 1,
+``q_kj = E_kj * alpha_j + (1 - E_kj) * beta_j``) and turns a trace of calls into a
+per-origin log-likelihood row. Given the origin and ``Q``, the cycle calls are
+conditionally independent (main Eq 2), so a trace's likelihood is the product of
+per-cycle factors: ``q`` for a positive call, ``1 - q`` for a negative, and a
+neutral factor of 1 for a missing (NA) call under ignorable missingness (main
+Eq 4). ``Q`` is calibrated beforehand and held fixed during the abundance fit.
+"""
 
 from __future__ import annotations
 
@@ -48,7 +57,8 @@ def build_emission_matrix(
     beta: Any = 0.05,
     Q: Any | None = None,
 ) -> NDArray[np.float64]:
-    """Return ``P(binding=1 | candidate, probe)``, the fixed emission matrix ``Q``.
+    """Return ``P(binding=1 | candidate, probe)``, the fixed emission matrix ``Q``
+    (the structured model of main Eq 1).
 
     ``alpha`` is the on-target positive-call probability (profile value 1) and
     ``beta`` the off-target positive-call probability (profile value 0); each may
@@ -90,7 +100,8 @@ def build_emission_matrix(
 def log_likelihood_from_aggregated(
     data: AggregatedTraces, Q: Any
 ) -> NDArray[np.float64]:
-    """Compute candidate log likelihoods for unique trace/mask patterns."""
+    """Candidate log likelihoods for unique trace/mask patterns (main Eq 2, with
+    missing calls marginalized per main Eq 4)."""
 
     q = np.asarray(Q, dtype=float)
     if q.ndim != 2 or q.shape[1] != data.n_probes:
@@ -122,11 +133,16 @@ def log_likelihood_from_aggregated(
 def log_likelihood_from_probe_counts(
     data: ProbeCountClasses, Q: Any
 ) -> NDArray[np.float64]:
-    """Compute relative candidate log likelihoods for probe-count classes.
+    """Compute *relative* candidate log likelihoods for probe-count classes
+    (the schedule-aware trace-likelihood classes of main Eq 11 / Supplementary
+    S2.4). Repeated applications of one calibrated probe reduce to per-probe
+    sufficient counts -- how many positive and how many negative -- so a row is a
+    count-weighted sum of ``log q`` and ``log(1 - q)`` over the retained probes.
 
-    ``data.log_likelihood_offset`` contains any origin-independent factors
-    removed during class construction. It is constant in the mixture weights
-    and is therefore not added to these assignment-relevant rows.
+    ``data.log_likelihood_offset`` holds the origin-independent factors removed
+    during class construction (e.g. the pan-tau probes, identical across every
+    origin). They are constant in the mixture weights and so are left out of these
+    assignment-relevant rows, but kept for the absolute log-likelihood.
     """
 
     q = np.asarray(Q, dtype=float)
@@ -165,10 +181,11 @@ def candidate_log_likelihoods(
 ) -> NDArray[np.float64]:
     """Return one candidate log-likelihood row per input observation.
 
-    Each observed call contributes ``log q`` for a positive (``1``) and
-    ``log(1 - q)`` for a negative (``0``).  Missing cycles (``-1``) are
-    marginalized under ignorable missingness and add exactly zero, so they never
-    act as negatives.  Pass ``cycle_to_probe`` to map physical cycles onto the
+    Given the origin and ``Q`` the calls are conditionally independent (main
+    Eq 2), so each observed call contributes ``log q`` for a positive (``1``) and
+    ``log(1 - q)`` for a negative (``0``).  Missing cycles (``-1``) marginalize to
+    a factor of 1 under ignorable missingness (main Eq 4) and add exactly zero, so
+    they never act as negatives.  Pass ``cycle_to_probe`` to map physical cycles onto the
     logical-probe columns of ``Q`` (repeated indices = repeated applications of
     one calibrated probe).
 

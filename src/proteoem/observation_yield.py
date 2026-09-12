@@ -1,8 +1,12 @@
 """Source-to-observation corrections for intact-molecule affinity traces.
 
-The fixed-emission EM kernel estimates composition among accepted traces. This
-module keeps the optional mapping between source and accepted composition in a
-separate, auditable layer.
+The observation-yield layer of manuscript Section 2.3. The fixed-emission EM
+kernel estimates the composition ``pi`` among *accepted* traces; this module maps
+between that and the *source* composition ``theta``, in a separate, auditable
+layer. The effective yield ``e_k = r_k * v_k`` (physical recovery times gate
+visibility) is the accepted-trace probability per source molecule, and
+``theta_k`` is proportional to ``pi_k / e_k``. Retention conditioning on the gate
+and inverse-yield correction do different jobs and must each be applied once.
 """
 
 from __future__ import annotations
@@ -47,7 +51,8 @@ def _yield_vector(
 def effective_observation_yield(
     recovery_probability: Any, panel_visibility: Any
 ) -> NDArray[np.float64]:
-    """Combine physical recovery and panel visibility into the effective yield.
+    """Combine physical recovery and gate visibility into the effective yield
+    (main Section 2.3).
 
     The effective observation yield ``e_k = r_k * v_k`` is the probability that
     one source molecule of origin ``k`` produces one accepted trace: physical
@@ -119,7 +124,8 @@ def source_to_analyzed_composition(
 def analyzed_to_source_composition(
     analyzed_composition: Any, effective_yield: Any
 ) -> NDArray[np.float64]:
-    """Inverse-yield correction from accepted records back to source composition.
+    """Inverse-yield correction from accepted records back to source composition
+    (main Section 2.3).
 
     Undoes the selection the assay applied: ``theta_k`` proportional to
     ``pi_k / e_k``, renormalized.  This is a *separate* operation from
@@ -245,7 +251,8 @@ def positive_gate_visibility(
 def condition_on_deterministic_gate(
     log_likelihoods: Any, panel_visibility: Any
 ) -> NDArray[np.float64]:
-    """Condition pre-gate trace log-likelihoods on a deterministic gate.
+    """Condition pre-gate trace log-likelihoods on a deterministic gate
+    (retention conditioning, main Section 2.3 / Supplementary S2.3).
 
     Subtracts ``log(v_k)`` so the likelihood matches the accepted population
     (``L_acc = f_k / v_k``).  Supply only *pre-gate* likelihoods, and only for
