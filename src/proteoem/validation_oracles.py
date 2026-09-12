@@ -5,6 +5,15 @@ production fitting path.  The constrained optimizer uses Euclidean projection
 and a projected-gradient line search, while the binary compatibility routine
 implements the classical incidence-matrix update directly.  Neither routine
 calls the ProteoEM EM kernel or its numerical helpers.
+
+These oracles exist to check the core estimator by independent means.
+:func:`maximize_fixed_mixture_on_simplex` maximizes the same fixed-component
+mixture log-likelihood the EM fit ascends (manuscript main Eqs 5-9) but by a
+different algorithm, so agreement confirms the EM fixed point is the constrained
+maximum-likelihood solution (main Eq 9).  :func:`fit_binary_compatibility_em` is
+the classical transcript-compatibility EM from RNA-seq quantification -- the same
+hard-set formulation underlying the binary-incidence baseline of Supplementary
+Methods S2.5.
 """
 
 from __future__ import annotations

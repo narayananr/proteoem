@@ -1,10 +1,24 @@
-"""Reusable utilities for fixed-Q model-violation benchmarks.
+"""Reusable utilities for the fixed-Q model-violation benchmark (manuscript
+Section 3.3 and Fig. 7).
 
-The helpers in this module deliberately keep simulation policy out of the
-core estimator.  They provide exact likelihood-class compression, a
-nonparametric bootstrap over those classes, probability-assignment metrics,
-and a finite-outcome conditioning diagnostic.  Bootstrap intervals are
-conditional on the supplied likelihood matrix (and therefore on fixed Q).
+The helpers here keep simulation policy out of the core estimator. They provide:
+
+* :func:`build_trace_likelihood_classes` -- exact compression to the
+  trace-likelihood classes of main Eq 11. Rows differing only by an
+  origin-independent factor are merged; the dropped constant is kept as an offset
+  so absolute predictive likelihoods still audit.
+* :func:`probability_assignment_metrics` -- the probabilistic assignment scores
+  reported in the benchmark (accuracy, log score / NLL, Brier, and the
+  calibration gap / ECE and overconfidence), evaluated both per candidate and per
+  observable proteoform group (main Eq 10).
+* :func:`bootstrap_fixed_q_classes` -- a nonparametric bootstrap over those
+  classes; intervals are conditional on the supplied likelihood matrix, and
+  therefore on fixed ``Q``. The ``NA_as_zero_hard_ml`` estimator is supplied only
+  as the declared hard-call negative control (a reduced baseline, Supplementary
+  Methods S2.5).
+* :func:`emission_distribution_diagnostics` -- a near-identifiability diagnostic
+  (Supplementary Methods S2.7): how well separated the per-origin outcome
+  distributions are, summarized analytically without enumerating ``2**C`` traces.
 """
 
 from __future__ import annotations
@@ -97,9 +111,10 @@ def build_trace_likelihood_classes(
     *,
     cycle_to_probe: Any | None = None,
 ) -> TraceLikelihoodClasses:
-    """Compress observations that have the same likelihood profile under Q.
+    """Compress observations into the trace-likelihood classes of main Eq 11.
 
-    Repeated physical cycles can be mapped to logical probes.  Positive and
+    Observations with the same relative-likelihood profile under ``Q`` form one
+    class.  Repeated physical cycles can be mapped to logical probes.  Positive and
     observed counts are then sufficient for the independent Bernoulli decoder.
     Missing calls reduce the observed count; they are never recoded as zero.
     """
@@ -505,6 +520,11 @@ def probability_assignment_metrics(
 ) -> tuple[dict[str, float | int], list[dict[str, float | int | str]]]:
     """Score candidate and observable-group posteriors without N-by-K expansion.
 
+    Reports the benchmark's probabilistic assignment quality (Section 3.3): the
+    posterior over origins (E-step responsibilities, main Eq 7) is scored both per
+    candidate and per observable proteoform group (main Eq 10), giving accuracy,
+    log score / NLL, Brier, and the calibration gap (ECE) and overconfidence.
+
     Truth states mapped to ``-1`` are excluded from assignment scores, as is
     necessary for omitted-origin closed-set fits.  Reliability rows use
     equal-width bins of the maximum posterior probability.
@@ -708,7 +728,8 @@ def probability_assignment_metrics(
 def emission_distribution_diagnostics(
     Q: Any, *, rank_tolerance: float = 1e-10
 ) -> dict[str, float | int]:
-    """Diagnose separation of independent-Bernoulli component distributions.
+    """Diagnose separation of independent-Bernoulli component distributions
+    (the near-identifiability diagnostic of Supplementary Methods S2.7).
 
     The Gram matrix is computed analytically over the complete binary outcome
     space: ``G[k,l] = sum_y p(y|k)p(y|l)``.  Its eigenvalues are squared

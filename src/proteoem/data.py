@@ -1,4 +1,24 @@
-"""Observation validation and sufficient-statistic aggregation."""
+"""Observation validation and sufficient-statistic aggregation.
+
+The data layer behind the fixed-``Q`` EM fit. Observations are coded ``-1/0/1``,
+where ``-1`` is a missing (NA) call that marginalizes to a neutral factor under
+ignorable missingness (manuscript main Eq 4), never a third emission state.
+
+Two exact, likelihood-preserving reductions keep the fit over a large candidate
+panel tractable:
+
+* :class:`AggregatedTraces` collapses identical trace-and-mask patterns to unique
+  rows with multiplicities. A trace's likelihood depends only on its pattern, so
+  molecules sharing a pattern share a row.
+* :class:`ProbeCountClasses` summarizes cycles mapped to one logical probe by
+  their positive and observed counts. Those counts are sufficient when the
+  repeated cycles are conditionally independent and share one calibrated emission
+  probability (the repeated-probe / class-compression reduction of Supplementary
+  Methods S2.4). :func:`compress_probe_count_classes` then drops logical probes
+  whose emission row is identical across every origin (e.g. the pan-tau probes):
+  they contribute only an origin-independent factor, retained exactly as a
+  log-likelihood offset, so assignment and mixture estimates are unchanged.
+"""
 
 from __future__ import annotations
 
@@ -397,7 +417,8 @@ def aggregate_probe_counts(
 def compress_probe_count_classes(
     data: ProbeCountClasses, Q: Any
 ) -> ProbeCountClasses:
-    """Remove origin-independent probe factors from assignment classes.
+    """Remove origin-independent probe factors from assignment classes
+    (the class-compression reduction of Supplementary Methods S2.4).
 
     A logical probe whose calibrated positive-call probability is exactly the
     same for every candidate contributes only a row-wide likelihood factor, so

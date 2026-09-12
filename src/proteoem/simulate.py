@@ -1,4 +1,14 @@
-"""Deterministic simulation from fixed affinity emission probabilities."""
+"""Simulation from the fixed-emission generative model.
+
+Draws molecule identities from a mixture over origins and then, given each
+identity and the fixed emission matrix ``Q`` (manuscript main Eq 1), draws
+independent per-cycle binary calls (main Eq 2). This is the generative model of
+main Eq 12, written at the level of *analyzed* traces: ``weights`` is the
+composition among the traces produced, so it corresponds to the mixture ``pi``
+the EM fit estimates, not the upstream source composition ``theta``. For a
+simulation that starts from source molecules and records recovery and a trace
+gate separately (main Section 2.3), use :mod:`proteoem.selection_simulate`.
+"""
 
 from __future__ import annotations
 
@@ -83,6 +93,9 @@ def simulate_traces(
     missing = _missing_probabilities(missing_rate, q.shape[1])
 
     rng = np.random.default_rng(seed)
+    # Identity ~ mixture, then each cycle is an independent Bernoulli(q) draw
+    # under the row of Q for that origin (main Eq 1-2): the generative model of
+    # main Eq 12.
     identities = rng.choice(q.shape[0], size=int(n_molecules), p=mixture)
     positive = rng.random((int(n_molecules), q.shape[1])) < q[identities]
     observations = positive.astype(np.int8)

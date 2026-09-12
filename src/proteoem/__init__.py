@@ -1,4 +1,12 @@
-"""Core inference tools for iterative affinity proteomics."""
+"""ProteoEM: probabilistic proteoform abundance estimation for iterative
+affinity proteomics.
+
+An open-source implementation of the fixed-emission EM described in the
+accompanying manuscript. A calibrated emission matrix ``Q`` (main Eq 1) is held
+fixed while expectation-maximization (main Eqs 5-9) estimates the proteoform
+mixture and assigns each trace a posterior over origins. See the per-module
+docstrings for the equation and section each component implements.
+"""
 
 from .data import (
     AggregatedTraces,

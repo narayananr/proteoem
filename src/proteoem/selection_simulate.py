@@ -3,8 +3,16 @@
 The ordinary :func:`proteoem.simulate_traces` function generates the
 composition among analyzed traces directly.  This module instead starts with
 source molecules, then records physical recovery and any deterministic trace
-gate separately.  It is intended for testing observation-yield corrections;
-it does not change the semantics of the ordinary simulator.
+gate separately.  It is intended for testing the observation-yield corrections
+of manuscript main Section 2.3; it does not change the semantics of the ordinary
+simulator.
+
+The two selection mechanisms it records, physical recovery ``r`` and gate
+visibility ``v``, are exactly the factors of the effective observation yield
+``e = r * v`` of Section 2.3.  The result exposes the source composition
+(``theta``), the accepted-trace composition (``pi``, as ``analyzed_composition``),
+and ``effective_yield`` (``e``), so the inverse-yield correction ``theta ∝ pi / e``
+can be checked against known ground truth.
 """
 
 from __future__ import annotations

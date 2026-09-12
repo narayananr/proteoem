@@ -1,4 +1,12 @@
-"""Command-line entry points for reproducible synthetic benchmarks."""
+"""Command-line entry points for the reproducible synthetic benchmark.
+
+The ``benchmark-tau`` command runs the Section 3 tau-like benchmark and writes
+``proteoform_abundances.tsv`` -- the weighted-affinity EM estimate (manuscript
+Section 2.4) in counts per million, one row per proteoform, one file per sample
+in the style of an RNA-seq quantifier. Simulation truth and the baseline
+estimates are written separately to ``benchmark_comparison.tsv``; only the
+benchmark knows the truth, so it never appears in the general abundance output.
+"""
 
 from __future__ import annotations
 

@@ -1,7 +1,20 @@
-"""Public-design-inspired synthetic benchmark utilities.
+"""Synthetic benchmark for the tau-like panel (manuscript Section 3).
 
-These functions model the structure of a targeted iterative-affinity assay.
-They do not reproduce Nautilus chemistry, software, calibration, or raw data.
+These functions build the structure of a targeted iterative-affinity assay and
+run the comparison reported in the paper. They model the design only; they do
+not reproduce any commercial platform's chemistry, software, calibration, or raw
+data.
+
+* :func:`make_tau_like_panel` builds the candidate dictionary of Section 3.1:
+  six tau isoforms times seven binary PTM sites (768 proteoforms), read by twelve
+  logical probes (two pan-tau, three isoform, seven PTM), each repeated
+  ``repeats`` times.
+* :func:`sparse_tau_weights` draws the sparse ground-truth composition (every
+  isoform represented, the rest filled to ``n_active`` active states).
+* :func:`run_tau_like_benchmark` fits weighted-affinity EM (the full graded
+  likelihood, main Section 2.4) and contrasts it with the two reduced baselines
+  of Supplementary Methods S2.5 -- binary-incidence EM and hard top-likelihood
+  counting -- on the same simulated traces (Section 3.2).
 """
 
 from __future__ import annotations
@@ -116,6 +129,9 @@ def make_tau_like_panel(*, repeats: int = 3) -> TauLikePanel:
     for isoform in ISOFORM_LABELS:
         n_insert = isoform[:2]
         repeat_domain = isoform[2:]
+        # Isoform-level probe truth: the two pan-tau probes always bind, then the
+        # N-terminal (0N / 2N) and repeat-domain (4R) isoform probes resolve the
+        # backbone (the binary isoform-probe codes of Supplementary Table S3).
         isoform_bits = [
             1,
             1,
@@ -293,6 +309,7 @@ def run_tau_like_benchmark(
     )
     aggregated = simulation.aggregated
 
+    # The method: weighted-affinity EM on the full graded likelihood (Section 2.4).
     weighted_fit = fit_em(
         simulation.observations,
         panel.logical_profiles,
@@ -307,12 +324,16 @@ def run_tau_like_benchmark(
     weighted_logs = candidate_log_likelihoods(
         weighted_fit.aggregated, weighted_fit.Q
     )
+    # Reduced baseline 1 (S2.5): hard top-likelihood counting -- assign each trace
+    # to its single most likely origin and count, discarding the graded evidence.
     hard_counts = hard_assignment_counts(
         weighted_logs, counts=weighted_fit.aggregated.counts, split_ties=True
     )
     hard_weights = hard_counts / hard_counts.sum()
     hard_weights.setflags(write=False)
 
+    # Reduced baseline 2 (S2.5): binary-incidence EM -- round the likelihood to
+    # 0/1 compatibility, then run the same mixture EM on that hard-set profile.
     incidence_logs = alignment_profile_log_likelihoods(
         aggregated, panel.profiles, mode="best"
     )
