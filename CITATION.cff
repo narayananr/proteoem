@@ -11,6 +11,7 @@ repository-code: "https://github.com/narayananr/proteoem"
 authors:
   - family-names: Raghupathy
     given-names: Narayanan
+    orcid: "https://orcid.org/0000-0002-2275-3674"
 abstract: >-
   A reference implementation of fixed-emission finite-mixture inference for
   abundance estimation from iterative single-molecule affinity traces.
