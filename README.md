@@ -4,6 +4,7 @@
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22721009.svg)](https://doi.org/10.5281/zenodo.22721009)
+[![arXiv](https://img.shields.io/badge/arXiv-2609.29155-b31b1b.svg)](https://arxiv.org/abs/2609.29155)
 
 ProteoEM quantifies proteins and proteoforms from single-molecule affinity traces.
 
@@ -238,5 +239,11 @@ MIT. See [`LICENSE`](LICENSE).
 
 ## Citation
 
-If you use ProteoEM, please cite it using the metadata in
-[`CITATION.cff`](CITATION.cff).
+If you use ProteoEM, please cite the methods preprint:
+
+> Raghupathy N. ProteoEM: probabilistic protein abundance estimation from
+> iterative affinity traces. arXiv:2609.29155 (2026).
+> https://arxiv.org/abs/2609.29155
+
+To cite the software itself, use the metadata in [`CITATION.cff`](CITATION.cff)
+or the Zenodo archive (DOI [10.5281/zenodo.22721009](https://doi.org/10.5281/zenodo.22721009)).

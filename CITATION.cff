@@ -1,8 +1,7 @@
 cff-version: 1.2.0
 message: >-
-  If you use ProteoEM, please cite the software using the metadata in this file.
-  A citation for the accompanying methods manuscript will be added when it is
-  available.
+  If you use ProteoEM, please cite the accompanying methods preprint
+  (preferred-citation below) and the software using the metadata in this file.
 title: ProteoEM
 type: software
 version: 0.1.1
@@ -20,3 +19,14 @@ keywords:
   - proteomics
   - single-molecule
   - proteoform
+preferred-citation:
+  type: article
+  title: "ProteoEM: probabilistic protein abundance estimation from iterative affinity traces"
+  authors:
+    - family-names: Raghupathy
+      given-names: Narayanan
+      orcid: "https://orcid.org/0000-0002-2275-3674"
+  journal: "arXiv"
+  year: 2026
+  doi: "10.48550/arXiv.2609.29155"
+  url: "https://arxiv.org/abs/2609.29155"
